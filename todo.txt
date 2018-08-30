@@ -1,0 +1,10 @@
+提高性能
+1. check_bid_number
+
+1. move some log into xxx
+2. get bid result and retry
+2. 过去6个月有回款记录的逾期天数
+
+
+3. run command remotely using cloud file sync
+start remote control

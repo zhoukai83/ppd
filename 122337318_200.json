@@ -1,0 +1,46 @@
+{
+	"result":1,
+	"resultContent":{
+		"authenticated":false,
+		"availableBalance":0,
+		"bidAmount":0,
+		"debgIng":false,
+		"fullBidAndDebtDealing":false,
+		"internalIp":false,
+		"islimit":false,
+		"listing":{
+			"amount":2264.0000,   //借款金额
+			"auditingDate":"2000-01-01 00:00:00",
+			"borrowerId":6832156,
+			"creationDate":"2018-07-22 10:07:19",
+			"creditCode":"B",    //
+			"currentRate":20.0,  //协议利率
+			"description":"手机app用户的借款",
+			"funding":491.0000,   // 已投出多少金额
+			"ispay":false,
+			"listDuration":15,   //剩余时间
+			"listEndDate":"2018-08-06 10:07:19",
+			"listType":55,
+			"listingId":122337318, 
+			"months":3,   //期限
+			"showRate":20.0, 
+			"source":0,
+			"statusId":1,
+			"title":"手机app用户的借款",
+			"vouch":0
+		},
+		"listingBorrowerOrLender":false,
+		"listingSaveBid":false,
+		"loanUse":"日常消费",
+		"repaymentMethod":0,
+		"totalBidUsers":9,   //投标人数
+		"userInfo":{
+			"creationDate":"2015-06-17 21:11:04",
+			"id":6832156,
+			"lastLoginDate":"2018-07-21 21:15:34",
+			"picture":"http://avatar.ppdai.com/crop/2015/07/04/7c467ba2-4037-488a-97e0-f2ab7cd6fc1c.png",
+			"role":12,
+			"userName":"pdu****2227"
+		}
+	}
+}

@@ -1,0 +1,14 @@
+.idea/*
+**/.ipynb_checkpoints/*
+data/*
+dataFinish/*
+log/*
+views/docs
+node_modules
+npm-debug.log
+**/.DS_Store
+public/labConfigs/*
+!/public/labConfigs/labConfigs.md
+shieldLog/*
+oncalltoollog/*
+mockData/*

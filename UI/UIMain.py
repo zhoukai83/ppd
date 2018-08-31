@@ -130,18 +130,19 @@ def check_bid_number(item, cookies):
     result = req.text
 
     json_data = json.loads(result)
+    listing_id = item['listingId']
     if "result" not in json_data or json_data["result"] != 1 or "resultContent" not in json_data or "dataList" not in json_data["resultContent"]:
-        logger.warn(f"check_bid_number: {json.dumps(result, ensure_ascii=False)}")
+        logger.warning(f"check_bid_number {listing_id}: {json.dumps(result, ensure_ascii=False)}")
         return False
 
     data_list = json_data["resultContent"]["dataList"]
     if len(data_list) != 1:
-        logger.warn(f"check_bid_number count != 1: {json.dumps(data_list, ensure_ascii=False)}")
+        logger.warning(f"check_bid_number {listing_id} count != 1: {json.dumps(data_list, ensure_ascii=False)}")
         return False
 
     verify_item = data_list[0]
     if verify_item["listingId"] != int(item["listingId"]):
-        logger.warn(f"check_bid_number listing id changed: {json.dumps(result, ensure_ascii=False)}")
+        logger.warning(f"check_bid_number {listing_id} listing id changed: {json.dumps(result, ensure_ascii=False)}")
         return False
 
     return True
@@ -221,12 +222,13 @@ def bid_by_request(item, cookies):
     data_item = data["dataList"][0]
     data_item["listingId"] = item["listingId"]
     data_item["amount"] = loan_amount
-    data_item["borrowerName"] = item["User"]
     data_item["creditCode"] = item["级别"]
     data_item["months"] = Utils.convert_to_int(item["期限"])
     data_item["title"] = item["title"]
+    data_item["borrowerName"] = item["User"]
     data_item["bids"] = Utils.convert_to_int(item["投标人数"])
     data_item["funding"] = Utils.convert_to_int(item["进度"]) * loan_amount / 100
+
     data_item["currentRate"] = Utils.convert_to_int(item["协议利率"])
     # post_data = '{"authInfo":"","authenticated":true,"availableBalance":279.08,"bidStatusDTOs":[],"creditCodes":"3","dataList":[{"bidNum":100,"bidStatusDTO":null,"amount":17400,"bids":233,"borrowerName":"pdu0****77408","certificateValidate":0,"creditCode":"B","creditValidate":1,"currentRate":20,"funding":16484,"isPay":false,"listingId":125233286,"mobileRealnameValidate":1,"months":12,"nCIICIdentityCheck":0,"statusId":1,"title":"手机app用户的第17次闪电借款"}],"didIBid":"1","ip":"101.41.247.234","maxAmount":17400,"minAmount":17400,"months":"1,2,3,4","needTotalCount":true,"pageCount":1,"pageIndex":1,"pageSize":10,"rates":"","riskLevelCategory":1,"sort":0,"source":1,"successLoanNum":"3","totalCount":1,"userId":87288708,"sigleBidAmount":50,"bidCount":1,"useCoupon":true}'
 
@@ -400,12 +402,14 @@ def main_ui():
                         continue
 
                     listing_ids_cache.append(int(listing_id))
+                    logger.info(f"navigate detail, {should_back}")
                     if should_back:
                         if not fetch_from_chrome.click_listing_in_listpage(listing_id, None):
                             continue
                     else:
                         fetch_from_chrome.navigate_detail(listing_id)
 
+                    logger.info("fetch detail info")
                     item = fetch_from_chrome.fetch_detail_info(False)
                     if item is None:
                         continue
@@ -438,8 +442,13 @@ def main_ui():
     winsound.PlaySound('finish.wav', winsound.SND_LOOP + winsound.SND_ASYNC)
     # with open("terminate.txt", "w") as f:
     #     f.write("False")
-    time.sleep(60 * 10)
+    time.sleep(0.5)
 
+    with open('UIMain.json', "r+") as f:
+        data = json.load(f)
+        data[platform.node()]["Terminate"] = "False"
+        f.seek(0)
+        f.write(json.dumps(data, indent=4))
 
 if __name__ == "__main__":
     logger = Utils.setup_logging()

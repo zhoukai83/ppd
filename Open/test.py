@@ -43,7 +43,6 @@ def save_to_csv(df, item_list):
 
     return df
 
-
 def main():
     df = pd.read_csv("loanlist.csv", encoding="utf-8")
     df.set_index("ListingId", inplace=True)
@@ -66,6 +65,28 @@ def main():
     pass
 
 
+
+async def test():
+    import random
+    import timeit
+    def sub_func():
+        random.seed('slartibartfast')
+        s = [random.random() for i in range(10000)]
+
+    logger.info("start")
+    yield
+    timeit.repeat(sub_func, number=100)
+    logger.info("end")
+
 if __name__ == "__main__":
     logger = setup_logging()
-    main()
+
+    # [test() for x in range(10)]
+    import asyncio
+
+    tasks = []
+    for x in range(10):
+        task = asyncio.ensure_future(test())
+        tasks.append(task)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.wait(tasks))

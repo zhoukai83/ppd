@@ -162,26 +162,26 @@ class FetchFromChromeQuick(FetchFromChrome):
         self.logger.log(15, "end")
 
     def fetch_detail_info(self, should_back=True):
-        if not self.wait_until_css("#baseInfo", 5):
-            self.back()
-            return None
-
-        if not self.wait_until_css("#borrowerInfo"):
-            self.back()
-            return None
-
-        url = self.driver.current_url
-        if not url.startswith("https://invest.ppdai.com/loan/info/"):
-            self.logger.warn("not in detail info page: %s", url)
-            self.back()
-            return None
-
         result = {}
         detail_info = []
+        self.logger.info("wait finish")
+        url = self.driver.current_url
+        if not url.startswith("https://invest.ppdai.com/loan/info/"):
+            self.logger.warning("not in detail info page: %s", url)
+            self.back()
+            return None
 
         url_numbers = re.findall(r"\d+", url)
         if len(url_numbers) == 1:
             result["listingId"] = int(url_numbers[0])
+
+        # if not self.wait_until_css("#baseInfo", 5):
+        #     self.back()
+        #     return None
+
+        if not self.wait_until_css("#borrowerInfo"):
+            self.back()
+            return None
 
         base_info_html = self.driver.find_element_by_id("baseInfo").get_attribute("innerHTML")
         soup = BeautifulSoup(base_info_html, "lxml")
@@ -210,6 +210,10 @@ class FetchFromChromeQuick(FetchFromChrome):
         main_element = soup.find("div", class_="main-item")
         for item in main_element.find_all("p"):
             detail_info.append(item.text)
+
+        if not self.wait_until_css("#borrowerInfo"):
+            self.back()
+            return None
 
         borrower_info_html = self.driver.find_element_by_id("borrowerInfo").get_attribute("innerHTML")
         soup = BeautifulSoup(borrower_info_html, "lxml")
@@ -241,6 +245,7 @@ class FetchFromChromeQuick(FetchFromChrome):
             split_result = item.split("：")
             if len(split_result) != 2:
                 self.logger.warn(f"item warn: {item}")
+                continue
             result[split_result[0].strip()] = split_result[1].strip()
 
         json_string = json.dumps(result, indent=4, sort_keys=True, ensure_ascii=False).replace("\xa5", "")

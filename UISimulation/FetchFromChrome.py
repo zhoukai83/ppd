@@ -12,12 +12,25 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from bs4 import BeautifulSoup
 
-from FetchFromChrome import FetchFromChrome
 
-
-class FetchFromChromeQuick(FetchFromChrome):
+class FetchFromChrome():
     def __init__(self, session_id=None, logger=None):
-        FetchFromChrome.__init__(self, session_id, logger)
+        self.logger = logger or logging.getLogger(__name__)
+        self.driver = webdriver.Remote("http://127.0.0.1:9515", webdriver.DesiredCapabilities.CHROME)
+        self.history = []
+
+        self.backup_session_id = self.driver.session_id
+        self.logger.info(self.driver.session_id)
+        if session_id:
+            self.driver.session_id = session_id
+
+        self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=3&period=2&auth="
+
+    def get_cookie_string(self):
+        driver_cookies = self.driver.get_cookies()
+        cookie_list = [f"{cookie['name']}={cookie['value']}" for cookie in driver_cookies]
+        cookies = "; ".join(cookie_list)
+        return cookies
 
     def get_all_listing_items(self):
         MAX_RETRY = 1

@@ -25,10 +25,13 @@ class PpdUISimulationRequest:
 
     def change_key(self, item):
         key_dict = {}
+        key_dict["listingId"] = "listingId"
+        key_dict["creationDate"] = "creationDate"
+        key_dict["User"] = "User"
 
         key_dict["amount"] = "借款金额"
         key_dict["creditCode"] = "级别"
-        key_dict["showRate"] = "协议利率"   # currentRate
+        key_dict["showRate"] = "协议利率"  # currentRate
         key_dict["months"] = "期限"
         key_dict["loanUse"] = "借款用途"
 
@@ -38,25 +41,32 @@ class PpdUISimulationRequest:
         key_dict["repaymentSourceType"] = "还款来源"
         key_dict["workInfo"] = "工作信息"
         key_dict["registerDateStr"] = "注册时间"
+        key_dict["graduate"] = "毕业院校"
+        key_dict["educationDegree"] = "文化程度"
+        key_dict["studyStyle"] = "学习形式"
 
-        key_dict["OwingAmount"] = "待还金额"
-        key_dict["OverdueLessCount"] = "逾期（0-15天）还清次数"
-        key_dict["OverdueMoreCount"] = "逾期（15天以上）还清次数"
-        key_dict["SuccessCount"] = "成功借款次数"
-        key_dict["NormalCount"] = "正常还清次数"
-        key_dict["HighestDebt"] = "历史最高负债"
+        key_dict["owingAmount"] = "待还金额"
+        key_dict["overdueLessNum"] = "逾期（0-15天）还清次数"
+        key_dict["overdueMoreNum"] = "逾期（15天以上）还清次数"
 
+        key_dict["firstSuccessDate"] = "第一次成功借款时间"
+        key_dict["totalPrincipal"] = "累计借款金额"
 
-        key_dict["HighestPrincipal"] = "单笔最高借款金额"
+        key_dict["successNum"] = "成功借款次数"
+        key_dict["normalNum"] = "正常还清次数"
+
+        key_dict["debtAmountMax"] = "历史最高负债"
+        key_dict["loanAmountMax"] = "单笔最高借款金额"
+
         key_dict["EducationDegree"] = "文化程度"
         key_dict["GraduateSchool"] = "毕业院校"
         key_dict["StudyStyle"] = "学习形式"
-
+        new_item = {}
         for key, value in key_dict.items():
             if key not in item:
                 continue
 
-            item[value] = item[key]
+            new_item[value] = item[key]
             # if key == "Gender":
             #     if item[value] == 2:
             #         item[value] = "女"
@@ -68,8 +78,9 @@ class PpdUISimulationRequest:
             #     if item[value] is None:
             #         item[value] = "无"
 
-        # item["成功还款次数"] = item["正常还清次数"] + item["逾期（0-15天）还清次数"] + item["逾期（15天以上）还清次数"]
-        return item
+        if "正常还清次数" in new_item and "逾期（0-15天）还清次数" in new_item and "逾期（15天以上）还清次数" in new_item:
+            new_item["成功还款次数"] = new_item["正常还清次数"] + new_item["逾期（0-15天）还清次数"] + new_item["逾期（15天以上）还清次数"]
+        return new_item
 
     async def post_data(self, url, data, headers):
         post_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -98,6 +109,7 @@ class PpdUISimulationRequest:
 
         base_info = json_data["resultContent"]["listing"]
         base_info["loanUse"] = json_data["resultContent"]["loanUse"]
+        base_info["User"] = json_data["resultContent"]["userInfo"]["userName"]
         return base_info
 
     async def get_show_borrower_info(self, listing_id: int):
@@ -114,7 +126,6 @@ class PpdUISimulationRequest:
 
         if json_data.get("result", -999) != 1:
             logger.warning(f"get_show_borrower_info f{listing_id}: return f{json_data}")
-            return None
 
         borrower_info = json_data["resultContent"]
         borrower_info["listingId"] = listing_id
@@ -122,6 +133,15 @@ class PpdUISimulationRequest:
         if "userAuthsList" in borrower_info:
             for item in borrower_info["userAuthsList"]:
                 borrower_info[item["name"]] = True
+
+        if "educationInfo" in borrower_info:
+            for edu_name, edu_value in borrower_info["educationInfo"].items():
+                borrower_info[edu_name] = edu_value
+        else:
+            borrower_info["EducationDegree"] = "无"
+            borrower_info["GraduateSchool"] = "无"
+            borrower_info["StudyStyle"] = "无"
+
         return borrower_info
 
     async def get_borrower_statistics(self, listing_id: int):
@@ -138,36 +158,70 @@ class PpdUISimulationRequest:
 
         if json_data.get("result", -999) != 1:
             logger.warning(f"get_show_borrower_info f{listing_id}: return f{json_data}")
-            return None
 
-        borrower_statistics = json_data["resultContent"]
+        borrower_statistics = json_data["resultContent"]["loanerStatistics"]
+        borrower_statistics["successNum"] = json_data["resultContent"]["loanerStatistics"]["listingStatics"][
+            "successNum"]
+        borrower_statistics["firstSuccessDate"] = json_data["resultContent"]["loanerStatistics"]["listingStatics"][
+            "firstSuccessDate"]
         borrower_statistics["listingId"] = listing_id
+
         return borrower_statistics
 
-def main():
-    tasks = []
-    loop = asyncio.get_event_loop()
+    def get_detail_info(self, listing_id: int):
+        tasks = []
+        logger.info("start")
+        loop = asyncio.get_event_loop()
 
-    logger.info("start send")
-    id = 127064996
+        client = PpdUISimulationRequest()
+        task = asyncio.ensure_future(client.get_show_listing_base_info(listing_id))
+        tasks.append(task)
+
+        task = asyncio.ensure_future(client.get_show_borrower_info(listing_id))
+        tasks.append(task)
+
+        task = asyncio.ensure_future(client.get_borrower_statistics(listing_id))
+        tasks.append(task)
+
+        json_data = loop.run_until_complete(asyncio.gather(*tasks))
+
+        logger.info(len(json_data))
+        item = None
+        if len(json_data) != 3:
+            logger.warning(json.dumps(json_data, ensure_ascii=False))
+        else:
+            item = self.change_key({**json_data[0], **json_data[1], **json_data[2]})
+        logger.info(json.dumps(item, indent=4,  ensure_ascii=False))
+
+        return item
+
+        pass
+
+def main():
+    # tasks = []
+    # loop = asyncio.get_event_loop()
+    #
+    # logger.info("start send")
+    id = 127092772
 
     client = PpdUISimulationRequest()
-    task = asyncio.ensure_future(client.get_show_listing_base_info(id))
-    tasks.append(task)
-
-    logger.info("start send")
-    task = asyncio.ensure_future(client.get_show_borrower_info(id))
-    tasks.append(task)
-
-    logger.info("start send")
-    task = asyncio.ensure_future(client.get_borrower_statistics(id))
-    tasks.append(task)
-
-    logger.info("finish send")
-    result = loop.run_until_complete(asyncio.gather(*tasks))
-    logger.info("wait result")
-    print(json.dumps(result, ensure_ascii=False))
-    print(result)
+    client.get_detail_info(id)
+    # task = asyncio.ensure_future(client.get_show_listing_base_info(id))
+    # tasks.append(task)
+    #
+    # logger.info("start send")
+    # task = asyncio.ensure_future(client.get_show_borrower_info(id))
+    # tasks.append(task)
+    #
+    # logger.info("start send")
+    # task = asyncio.ensure_future(client.get_borrower_statistics(id))
+    # tasks.append(task)
+    #
+    # logger.info("finish send")
+    # result = loop.run_until_complete(asyncio.gather(*tasks))
+    # logger.info("wait result")
+    # print(json.dumps(result, ensure_ascii=False))
+    # print(result)
 
 
 if __name__ == '__main__':

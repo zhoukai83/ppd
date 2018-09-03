@@ -137,12 +137,12 @@ def check_bid_number(item, cookies):
 
     data_list = json_data["resultContent"]["dataList"]
     if len(data_list) != 1:
-        logger.warning(f"check_bid_number {listing_id} count != 1: {json.dumps(data_list, ensure_ascii=False)}")
+        logger.warning(f"check_bid_number {listing_id} {loan_amount} count != 1: {json.dumps(data_list, ensure_ascii=False)}")
         return False
 
     verify_item = data_list[0]
     if verify_item["listingId"] != int(item["listingId"]):
-        logger.warning(f"check_bid_number {listing_id} listing id changed: {json.dumps(result, ensure_ascii=False)}")
+        logger.warning(f"check_bid_number {listing_id} listing id changed to: {verify_item['listingId']}: {json.dumps(result, ensure_ascii=False)}")
         return False
 
     return True
@@ -260,6 +260,7 @@ def totally_main_ui():
     current_page = 1
     total_page = 1
     no_more_money = False
+    navigate_details_page_count = 0
     df = None
     if os.path.exists(data_file_path):
         df = pd.read_csv(data_file_path, encoding="utf-8")
@@ -271,7 +272,6 @@ def totally_main_ui():
         try:
             fetch_from_chrome.switch_to_window(0)
             while config["Terminate"] == "False":
-
                 sleep_time = config["Sleep"] + random.randint(0, config["RandomSleep"])
                 if no_more_money:
                     sleep_time = sleep_time + 3
@@ -281,14 +281,15 @@ def totally_main_ui():
                 if config["Status"] == "Pause":
                     continue
 
-                cookies = get_ppd_cookie(fetch_from_chrome.driver)
-                if fetch_from_chrome.is_account_money_low():
-                    no_more_money = True
+                no_more_money = fetch_from_chrome.is_account_money_low()
 
                 # if current_page < total_page:
+                #     # fetch_from_chrome.back_until_listing_page(navigate_details_page_count)
+                #     # time.sleep(1)
+                #
                 #     logger.info(f"click to next page: {current_page} {total_page}")
                 #     fetch_from_chrome.click_to_next_page()
-                #     time.sleep(0.5)
+                #     time.sleep(1.5)
                 # else:
                 fetch_from_chrome.refresh_loan_list_page()
 
@@ -299,18 +300,24 @@ def totally_main_ui():
                     continue
 
                 should_back = len(listing_ids) == 1
+                navigate_details_page_count = 0
                 for listing_id in listing_ids:
                     if int(listing_id) in listing_ids_cache:
                         continue
 
                     listing_ids_cache.append(int(listing_id))
+                    should_back = True
                     if should_back:
-                        if not fetch_from_chrome.click_listing_in_listpage(listing_id, None):
+                        if not fetch_from_chrome.click_listing_in_listpage(listing_id, None, in_current_tab=True):
                             continue
                     else:
                         fetch_from_chrome.navigate_detail(listing_id)
 
+                    # fetch_from_chrome.switch_to_window(1)
                     item = fetch_from_chrome.fetch_detail_info(False)
+                    # fetch_from_chrome.close_window(0)
+                    # time.sleep(2)
+                    navigate_details_page_count += 1
                     if item is None:
                         continue
 
@@ -323,10 +330,6 @@ def totally_main_ui():
 
                     can_bid, first_strategy = strategy_factory.is_item_can_bid(item)
                     if not can_bid:
-                        df = save_to_csv(df, item)
-                        continue
-
-                    if not check_bid_number(item, cookies):
                         df = save_to_csv(df, item)
                         continue
 
@@ -357,9 +360,6 @@ def totally_main_ui():
         except Exception as ex:
             logger.info(ex, exc_info=True)
 
-    print("finish")
-    winsound.PlaySound('finish.wav', winsound.SND_LOOP + winsound.SND_ASYNC)
-    time.sleep(60 * 10)
 
 # 1 2  he cai
 def main_ui():
@@ -385,9 +385,7 @@ def main_ui():
                     continue
 
                 cookies = get_ppd_cookie(fetch_from_chrome.driver)
-                if fetch_from_chrome.is_account_money_low():
-                    no_more_money = True
-
+                no_more_money = fetch_from_chrome.is_account_money_low()
                 fetch_from_chrome.refresh_loan_list_page()
 
                 listing_ids, current_page, total_page = fetch_from_chrome.get_all_listing_items()
@@ -438,20 +436,56 @@ def main_ui():
         except Exception as ex:
             logger.info(ex, exc_info=True)
 
+
+def bid_today():
+    sf = UIStrategyFactory()
+    df = pd.read_csv("..\\UI\\UIMain.csv", encoding="utf-8")
+    df = df[df["期限"] != "12个月"]
+
+    series_creation_date = pd.to_datetime(df["creationDate"])
+    current_day = pd.to_datetime('today').strftime("%m/%d/%Y")
+    print(current_day)
+
+    next_day = pd.Timestamp(current_day) + pd.DateOffset(1)
+    df = df[(series_creation_date > pd.Timestamp(current_day)) & (series_creation_date < next_day)]
+    # print(df.shape)
+
+    config = refresh_config()
+    with FetchFromChromeQuick(config["Session"]) as fetch_from_chrome:
+        cookies = get_ppd_cookie(fetch_from_chrome.driver)
+        for item in df.to_dict('records'):
+            can_bid, first_strategy = sf.is_item_can_bid(item, False)
+            time.sleep(1.5)
+            if can_bid:
+                if not check_bid_number(item, cookies):
+                    continue
+
+                print(f"bid: {item['listingId']} \t {first_strategy}")
+                item["strategy"] = first_strategy.name
+                if bid_by_request(item, cookies):
+                    logger.log(21, "bid: %s: %s \n%s \n%s", item["listingId"], first_strategy,
+                               first_strategy.strategy_detail(),
+                               json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False))
+
+                break
+
+
+
+if __name__ == "__main__":
+    logger = Utils.setup_logging()
+
+    totally_main_ui()
+    # test()
+
+    # bid_today()
+
     print("finish")
     winsound.PlaySound('finish.wav', winsound.SND_LOOP + winsound.SND_ASYNC)
-    # with open("terminate.txt", "w") as f:
-    #     f.write("False")
-    time.sleep(0.5)
+
+    time.sleep(0.8)
 
     with open('UIMain.json', "r+") as f:
         data = json.load(f)
         data[platform.node()]["Terminate"] = "False"
         f.seek(0)
         f.write(json.dumps(data, indent=4))
-
-if __name__ == "__main__":
-    logger = Utils.setup_logging()
-
-    main_ui()
-    # test()

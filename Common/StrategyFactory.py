@@ -96,7 +96,7 @@ class StrategyFactory:
             try:
                 if strategy_item.is_item_can_bid(item):
                     if use_log:
-                        self.logger.info("%s %s %s", "success", listing_id, strategy_item)
+                        self.logger.info(f"%s %s {item['借款金额']} %s", "success", listing_id, strategy_item)
                     can_bid = True
 
                     if first_strategy is None and can_bid:
@@ -129,7 +129,7 @@ class StrategyFactory:
 
 
             if use_log:
-                self.logger.log(15, "%s %s \t %s", len(list_items), success, strategy_item)
+                self.logger.log(15, f"%s %s \t %s", len(list_items), success, strategy_item)
 
         success = 0
         for listing_item in list_items[test_num:]:

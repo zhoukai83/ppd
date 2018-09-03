@@ -28,7 +28,7 @@ class FetchFromChrome:
 
         # self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=2,3&period=1,2"
 
-        self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=3,2&period=2,1&auth="
+        self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=3&period=2&auth="
     def __enter__(self):
         return self
 
@@ -140,11 +140,12 @@ class FetchFromChrome:
 
     def quick_bid(self):
         self.wait_loading_success()
+
         self.retry_call(self.driver.find_element_by_class_name("el-button__one-key-bid").click)
         # if not self.wait_until_css("#bid-one-key .el-button__bid-confirm"):
         #     self.logger.warn("can not find bid confirm button")
         #     return False
-
+        self.retry_call(self.driver.find_element_by_class_name("el-checkbox__protocol").click)
         self.retry_call(self.driver.find_element_by_css_selector("#bid-one-key .el-button__bid-confirm").click)
         return True
         # self.driver.find_element_by_css_selector("#bid-one-key > section > button").click()
@@ -158,7 +159,7 @@ class FetchFromChrome:
         # self.logger.info("swith to window: %s", window_name)
         self.driver.switch_to.window(window_name)
 
-    def close_window(self):
+    def close_window(self, index):
         self.driver.close()
         window_name = self.driver.window_handles[0]
         self.driver.switch_to.window(window_name)
@@ -350,6 +351,17 @@ class FetchFromChrome:
 
     def click_to_next_page(self):
         self.retry_call(self.driver.find_element_by_css_selector(".btn-next").click)
+
+    def back_until_listing_page(self, navigate_count=0):
+        if navigate_count != 0:
+            self.driver.execute_script(f"window.history.go(-{navigate_count})")
+
+        for x in range(2):
+            if self.driver.current_url.startswith("https://invest.ppdai.com/loan/listpage"):
+                break
+
+            self.back()
+            time.sleep(1)
 
     def get_all_buy_listing_items(self):
         MAX_RETRY = 1

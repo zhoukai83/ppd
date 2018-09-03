@@ -35,7 +35,8 @@ class UIStrategyFactory(StrategyFactory):
             ["成功还款次数", ">", "10", "int"],
             ["本次借款后负债/历史最高负债", "<", "0.90", "rate"],              # 0.7 - 0.95
             ["借款金额/单笔最高借款金额", "<", "0.95", "rate"],          # 0.7 - 0.95
-            ["网络借贷平台借款余额", "<", "10000", "int"]               # 0  - 20000
+            ["网络借贷平台借款余额", "<", "10000", "int"],              # 0  - 20000
+            ["逾期（0-15天）还清次数/成功还款次数", "<", "0.02", "rate"],    # 0.05
 
         ])
         self.strategy_list.append(base_strategy)
@@ -90,6 +91,24 @@ def test_ui():
     sf.report_all(df)
 
 
+def test_ui_today():
+    sf = UIStrategyFactory()
+    df = pd.read_csv("..\\UI\\UIMain.csv", encoding="utf-8")
+    df = df[df["期限"] != "12个月"]
+
+    series_creation_date = pd.to_datetime(df["creationDate"])
+    current_day = pd.to_datetime('today').strftime("%m/%d/%Y")
+    print(current_day)
+
+    next_day = pd.Timestamp(current_day) + pd.DateOffset(1)
+    df = df[(series_creation_date > pd.Timestamp(current_day)) & (series_creation_date < next_day)]
+    # print(df.shape)
+    result = sf.report(df.to_dict('records'), -3000, True)
+
+    # print(sf.report(df.to_dict('records'), -100))
+    # sf.report_all(df)
+
+
 def test_ui_base_strategy_factory():
     sf = UIStrategyFactory(OpenStrategy)
     df_listinginfo = pd.read_csv("..\\Open\\listingInfo.csv", encoding="utf-8")
@@ -134,7 +153,7 @@ def test_overdue():
     print(json.dumps(obj, indent=4, ensure_ascii=False))
 def main():
     test_ui()
-
+    # test_ui_today()
     # test_overdue()
     # test_ui_base_strategy_factory()
     # test_open()

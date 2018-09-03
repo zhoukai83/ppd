@@ -116,10 +116,13 @@ class FetchFromChromeQuick(FetchFromChrome):
 
         return None, None
 
-    def click_listing_in_listpage(self, listing_id, link_element):
+    def click_listing_in_listpage(self, listing_id, link_element=None, in_current_tab=True):
         try:
             link_element = self.driver.find_element_by_css_selector("a[href*='" + str(listing_id) + "']")
-            self.driver.execute_script("arguments[0].setAttribute('target',''); arguments[0].click();", link_element)
+            if not in_current_tab:
+                self.driver.execute_script("arguments[0].click();", link_element)
+            else:
+                self.driver.execute_script("arguments[0].setAttribute('target',''); arguments[0].click();", link_element)
             return True
             # self.retry_call(link_element.click)
         except Exception as ex:
@@ -168,7 +171,7 @@ class FetchFromChromeQuick(FetchFromChrome):
         url = self.driver.current_url
         if not url.startswith("https://invest.ppdai.com/loan/info/"):
             self.logger.warning("not in detail info page: %s", url)
-            self.back()
+            # self.back()
             return None
 
         url_numbers = re.findall(r"\d+", url)
@@ -179,7 +182,7 @@ class FetchFromChromeQuick(FetchFromChrome):
         #     self.back()
         #     return None
 
-        if not self.wait_until_css("#borrowerInfo"):
+        if not self.wait_until_css("#borrowerInfo") and should_back:
             self.back()
             return None
 
@@ -211,7 +214,7 @@ class FetchFromChromeQuick(FetchFromChrome):
         for item in main_element.find_all("p"):
             detail_info.append(item.text)
 
-        if not self.wait_until_css("#borrowerInfo"):
+        if not self.wait_until_css("#borrowerInfo") and should_back:
             self.back()
             return None
 
@@ -220,7 +223,7 @@ class FetchFromChromeQuick(FetchFromChrome):
         for borrower_info_item_element in soup.find_all("div"):
             detail_info.append(borrower_info_item_element.text)
 
-        if not self.wait_until_css("#loanRecord"):
+        if not self.wait_until_css("#loanRecord") and should_back:
             self.back()
             return None
 

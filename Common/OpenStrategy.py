@@ -63,15 +63,12 @@ class OpenStrategy(StrategyBase):
                     "OverdueMoreCount": "逾期（15天以上）还清次数",
                     "SuccessCount": "成功借款次数",
                     "NormalCount": "正常还清次数",
-                    # "NormalCount": "成功还款次数",
                     "HighestDebt": "历史最高负债",
                     "Amount": "借款金额",
                     "HighestPrincipal": "单笔最高借款金额",
                     "EducationDegree": "文化程度",
                     "GraduateSchool": "毕业院校",
                     "StudyStyle": "学习形式"}
-
-
 
         for key, value in key_dict.items():
             if key not in item:
@@ -89,7 +86,6 @@ class OpenStrategy(StrategyBase):
             elif key == "EducationDegree":
                 if item[value] is None:
                     item[value] = "无"
-
 
         item["成功还款次数"] = item["正常还清次数"] + item["逾期（0-15天）还清次数"] + item["逾期（15天以上）还清次数"]
         return item

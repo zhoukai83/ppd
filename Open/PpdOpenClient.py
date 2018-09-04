@@ -8,8 +8,10 @@ import logging
 import requests
 from Open.RsaClient import rsa_client
 import json
+from collections import deque
 
 # {"AccessToken":"78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c","ExpiresIn":604800,"OpenID":"a27effb5cc9f4d2fad1053642a155fe1","RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
+#  {"AccessToken":"748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 class PpdOpenClient:
     def __init__(self, logger=None):
         self.session = requests.Session()
@@ -18,7 +20,9 @@ class PpdOpenClient:
 
         # 507d1c7703144dc19ddfd17e8028740b & state =
         self.code = "507d1c7703144dc19ddfd17e8028740b"
-        self.access_token = "78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c"
+        self.access_token = "748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca"
+
+        self.listing_id_cache = deque(maxlen=1000)
         pass
 
     def get_loan_list(self):
@@ -58,7 +62,6 @@ class PpdOpenClient:
     def get_debt_info(self, debt_ids):
         # if len(debt_ids) > 10:
         #     raise ValueError(f"get_listing_info() parame listing_ids length > 10,  {len(debt_ids)}, {debt_ids}")
-
         url = "https://openapi.ppdai.com/debt/openapiNoAuth/batchDebtInfo"
         data = {
             "DebtIds": debt_ids
@@ -71,6 +74,11 @@ class PpdOpenClient:
         data = {"AppID": self.appid, "Code": code}
         return self.post(url, data=data)
 
+    def refresh_token(self, openid, token):
+        url = "https://ac.ppdai.com/oauth2/refreshtoken"
+        data = {"AppID": self.appid, "OpenId": openid, "RefreshToken": token}
+        return self.post(url, data=data)
+
     def get_query_balance(self):
         url = "https://openapi.ppdai.com/balance/balanceService/QueryBalance"
         data = {
@@ -78,13 +86,26 @@ class PpdOpenClient:
         return self.post(url, data=data, access_token=self.access_token)
 
     def bid(self, listing_id):
-        access_url = "https://openapi.ppdai.com/listing/openapi/bid"
+        url = "https://openapi.ppdai.com/listing/openapi/bid"
         data = {
             "ListingId": listing_id,
             "Amount": 50,
             "UseCoupon": "true"
         }
-        return self.post(access_url, data, access_token=self.access_token)
+        return self.post(url, data, access_token=self.access_token)
+
+    def get_bid_list(self):
+        url = "https://openapi.ppdai.com/bid/openapi/bidList"
+        start_date_time = datetime.utcnow()
+        data = {
+            "StartTime": start_date_time.strftime('%Y-%m-%d'),
+            "EndTime": start_date_time.strftime('%Y-%m-%d'),
+            "PageIndex": 1,
+            "PageSize": 20
+        }
+
+        return self.post(url, data, access_token=self.access_token)
+        pass
 
     def post(self, url, data, access_token=""):
         start_date_time = datetime.utcnow()
@@ -115,6 +136,25 @@ class PpdOpenClient:
         return req.text
         pass
 
+    def get_loan_list_ids(self):
+        new_listing_id = None
+        result = self.get_loan_list()
+        json_data = json.loads(result)
+        if json_data.get("Result", -999) != 1:
+            self.logger.error(f"get_loan_list: {json_data}")
+            return new_listing_id
+
+        listing_ids = [item["ListingId"] for item in json_data["LoanInfos"]]
+        new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
+        if new_listing_id is not None and len(new_listing_id) != 0:
+            self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)},  {new_listing_id}")
+        else:
+            # self.logger.info("No more data")
+            return None
+
+        self.listing_id_cache.extend(new_listing_id)
+        return new_listing_id
+
 
 def main():
     client = PpdOpenClient()
@@ -133,26 +173,13 @@ def main():
     try:
         # print(client.get_buy_list(levels="B"))
 
-        print("")
+        # print("")
+        # print(client.get_debt_info([118691808, 118691802, 118691801]))
 
-        print(client.get_debt_info([118691808,
-118691802,
-118691801,
-118691800,
-118691799,
-118691798,
-118691797,
-118691796,
-118691795,
-118691794,
-118691793,
-118691792,
-118691791,
-                                    118691790,
-                                    118691789,
-                                    118691788,
-                                    118691787
-                                    ]))
+        # openid = "a27effb5cc9f4d2fad1053642a155fe1"
+        # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
+        # print(client.refresh_token(openid, refresh_token))
+        print(client.get_bid_list())
     except Exception as ex:
         print(ex)
     pass

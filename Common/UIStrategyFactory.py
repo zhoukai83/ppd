@@ -33,7 +33,7 @@ class UIStrategyFactory(StrategyFactory):
             ["逾期（15天以上）还清次数", "==", "0", "int"],
             ["成功借款次数", "!=", "0", "int"],
             ["成功还款次数", ">", "10", "int"],
-            ["本次借款后负债/历史最高负债", "<", "0.90", "rate"],              # 0.7 - 0.95
+            ["本次借款后负债/历史最高负债", "<", "0.92", "rate"],              # 0.7 - 0.95
             ["借款金额/单笔最高借款金额", "<", "0.95", "rate"],          # 0.7 - 0.95
             ["网络借贷平台借款余额", "<", "10000", "int"],              # 0  - 20000
             ["逾期（0-15天）还清次数/成功还款次数", "<", "0.02", "rate"],    # 0.05
@@ -48,8 +48,8 @@ class UIStrategyFactory(StrategyFactory):
             ["逾期（15天以上）还清次数", "==", "0", "int"],
             ["成功借款次数", "!=", "0", "int"],
             ["逾期（0-15天）还清次数", "==", "0", "int"],
-            ["成功还款次数", ">", "50", "int"],                     # 40 - 60
-            ["本次借款后负债/历史最高负债", "<", "0.90", "rate"],  # 0.7 - 0.95
+            ["成功还款次数", ">", "40", "int"],                     # 40 - 60
+            ["本次借款后负债/历史最高负债", "<", "0.92", "rate"],  # 0.7 - 0.95
             ["网络借贷平台借款余额", "<", "10000", "int"]
         ])
         self.strategy_list.append(base_strategy1)
@@ -85,7 +85,9 @@ class UIStrategyFactory(StrategyFactory):
 
 def test_ui():
     sf = UIStrategyFactory()
-    df = pd.read_csv("..\\UI\\UIMain.csv", encoding="utf-8")
+    file_path = "..\\UI\\UIMain.csv"
+    # file_path = "..\\UISimulation\\UISimulationMain.csv"
+    df = pd.read_csv(file_path, encoding="utf-8")
     df = df[df["期限"] != "12个月"]
     # print(sf.report(df.to_dict('records'), -100))
     sf.report_all(df)
@@ -152,8 +154,8 @@ def test_overdue():
 
     print(json.dumps(obj, indent=4, ensure_ascii=False))
 def main():
-    test_ui()
-    # test_ui_today()
+    # test_ui()
+    test_ui_today()
     # test_overdue()
     # test_ui_base_strategy_factory()
     # test_open()

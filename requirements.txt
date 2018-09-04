@@ -1,3 +1,4 @@
+aiohttp
 unicodecsv==0.14.1
 urllib3==1.23
 virtualenv==15.1.0

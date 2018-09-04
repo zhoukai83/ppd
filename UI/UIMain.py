@@ -333,6 +333,7 @@ def totally_main_ui():
                         df = save_to_csv(df, item)
                         continue
 
+                    winsound.PlaySound('finish.wav', winsound.SND_ASYNC)
                     filter_success = fetch_from_chrome.filter_item(item)
                     if not filter_success:
                         df = save_to_csv(df, item)

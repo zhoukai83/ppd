@@ -94,6 +94,8 @@ class StrategyFactory:
 
         for strategy_item in self.strategy_list:
             try:
+                if use_log:
+                    self.logger.debug(f"\n{strategy_item}")
                 if strategy_item.is_item_can_bid(item):
                     if use_log:
                         self.logger.info(f"%s %s {item['借款金额']} %s", "success", listing_id, strategy_item)

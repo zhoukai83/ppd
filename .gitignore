@@ -1,5 +1,6 @@
 .idea/*
 **/.ipynb_checkpoints/*
+**/__pycache__/*
 data/*
 dataFinish/*
 log/*
@@ -12,3 +13,4 @@ public/labConfigs/*
 shieldLog/*
 oncalltoollog/*
 mockData/*
+

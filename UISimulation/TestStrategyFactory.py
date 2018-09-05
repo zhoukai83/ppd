@@ -42,9 +42,9 @@ def test_ui_today():
     print(current_day)
 
     next_day = pd.Timestamp(current_day) + pd.DateOffset(1)
-    df = df[(series_creation_date > pd.Timestamp(current_day)) & (series_creation_date < next_day)]
+    # df = df[(series_creation_date > pd.Timestamp(current_day)) & (series_creation_date < next_day)]
     print(df.shape)
-    result = sf.report(df.to_dict('records'), -3000, True)
+    result = sf.report(df.to_dict('records'), -3000, False, True)
 
     # print(sf.report(df.to_dict('records'), -100))
     # sf.report_all(df)
@@ -82,7 +82,7 @@ def test_overdue():
 
 def main():
     test_ui()
-    # test_ui_today()
+    test_ui_today()
 
     test_last_item()
     # test_overdue()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # logger = Utils.setup_logging()
     # logger.log(21, "bid: %s", "sss")
     # logger.info("test")
-    logging_format = '%(message)s'
+    logging_format = '"%(asctime)s %(levelname)s %(module)s %(lineno)d \t%(message)s'
     logger = logging.basicConfig(level=10, format=logging_format)
 
     pd.set_option('display.max_columns', 500)

@@ -46,7 +46,7 @@ class StrategyBase:
             item["本次借款后负债"] = Utils.convert_to_float(item["待还金额"]) + Utils.convert_to_float(item["借款金额"])
         return item
 
-    def is_item_can_bid(self, item, show_full_log=False):
+    def is_item_can_bid(self, item, show_full_log=False, show_failed_reason=False):
         item = self.handle_item(item)
         can_bid = True
         for filter_item in self.filters:
@@ -60,7 +60,8 @@ class StrategyBase:
 
             filter_item_result = False
             if filter_item_key not in item and filter_item_value_type != "rate":
-                self.logger.info(filter_item_key + "not exist")
+                description = filter_item_key + "not exist"
+                self.logger.info(description)
                 can_bid = False
                 continue
 
@@ -106,8 +107,16 @@ class StrategyBase:
                 self.logger.error("not support")
                 filter_item_result = False
 
-            # self.logger.debug("{0: <5} {1: <7} {2: <7} {3}".format(str(filter_item_result), actual_value, expected_value, str(filter_item)))
-            self.logger.debug(f"{str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+            if show_full_log:
+                self.logger.debug(f"{str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+
+            if show_failed_reason and not filter_item_result:
+                listing_id = "UnKnown"
+                if "listingId" in item:
+                    listing_id = item["listingId"]
+                self.logger.info(
+                    f"{listing_id} {self.name} {str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+
             if not filter_item_result:
                 can_bid = False
                 return False

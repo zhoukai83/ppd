@@ -82,7 +82,7 @@ class StrategyFactory:
 
         pass
 
-    def is_item_can_bid(self, item, use_log=True):
+    def is_item_can_bid(self, item, use_log=True, show_failed_reason=False):
         can_bid = False
         first_strategy = None
 
@@ -96,7 +96,7 @@ class StrategyFactory:
             try:
                 if use_log:
                     self.logger.debug(f"\n{strategy_item}")
-                if strategy_item.is_item_can_bid(item):
+                if strategy_item.is_item_can_bid(item, show_failed_reason=show_failed_reason):
                     if use_log:
                         self.logger.info(f"%s %s {item['借款金额']} %s", "success", listing_id, strategy_item)
                     can_bid = True
@@ -110,7 +110,7 @@ class StrategyFactory:
             self.logger.log(15, "%s %s", "failed ", listing_id)
         return can_bid, first_strategy
 
-    def report(self, list_items, test_num=-100, use_log=True):
+    def report(self, list_items, test_num=-100, use_log=True, show_failed_reason=False):
         success = 0
         total = 0
         total_succss = 0
@@ -123,7 +123,7 @@ class StrategyFactory:
                 if use_log:
                     self.logger.debug(f"\n {listing_item}")
 
-                if strategy_item.is_item_can_bid(listing_item, use_log):
+                if strategy_item.is_item_can_bid(listing_item, use_log, show_failed_reason=show_failed_reason):
                     success += 1
 
             obj[str(strategy_item)] = success

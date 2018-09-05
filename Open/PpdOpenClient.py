@@ -136,15 +136,15 @@ class PpdOpenClient:
         return req.text
         pass
 
-    def get_loan_list_ids(self):
-        new_listing_id = None
+    def get_loan_list_ids(self, credit_code: str, month: int):
+        new_listing_ids = None
         result = self.get_loan_list()
         json_data = json.loads(result)
         if json_data.get("Result", -999) != 1:
             self.logger.error(f"get_loan_list: {json_data}")
-            return new_listing_id
+            return new_listing_ids
 
-        listing_ids = [item["ListingId"] for item in json_data["LoanInfos"]]
+        listing_ids = [item["ListingId"] for item in json_data["LoanInfos"] if item["Months"] == month and item["CreditCode"] == credit_code]
         new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
         if new_listing_id is not None and len(new_listing_id) != 0:
             self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)},  {new_listing_id}")

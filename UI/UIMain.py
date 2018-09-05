@@ -283,15 +283,15 @@ def totally_main_ui():
 
                 no_more_money = fetch_from_chrome.is_account_money_low()
 
-                # if current_page < total_page:
-                #     # fetch_from_chrome.back_until_listing_page(navigate_details_page_count)
-                #     # time.sleep(1)
-                #
-                #     logger.info(f"click to next page: {current_page} {total_page}")
-                #     fetch_from_chrome.click_to_next_page()
-                #     time.sleep(1.5)
-                # else:
-                fetch_from_chrome.refresh_loan_list_page()
+                if current_page < total_page:
+                    # fetch_from_chrome.back_until_listing_page(navigate_details_page_count)
+                    # time.sleep(1)
+
+                    logger.info(f"click to next page: {current_page} {total_page}")
+                    fetch_from_chrome.click_to_next_page()
+                    time.sleep(1.5)
+                else:
+                    fetch_from_chrome.refresh_loan_list_page()
 
                 listing_ids, current_page, total_page = fetch_from_chrome.get_all_listing_items()
                 logger.debug("iter_listing_item_to_detail_page end")

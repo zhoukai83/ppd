@@ -14,7 +14,8 @@ import time
 import os
 import random
 import winsound
-
+from Open.PpdOpenClient import PpdOpenClient
+from win10toast import ToastNotifier
 
 def refresh_config():
     with open('UISimMain.json') as f:
@@ -33,9 +34,11 @@ def restore_config():
 
 def main():
     strategy_factory = UIStrategyFactory()
-    ppd_client = PpdUISimulationRequest()
+    ppd_sim_client = PpdUISimulationRequest()
+    ppd_open_client = PpdOpenClient()
     no_more_money = False
     df = None
+    toaster = ToastNotifier()
     current_page = 1
     total_page = 1
     data_file_path = "UISimMain.csv"
@@ -59,7 +62,7 @@ def main():
                     continue
 
                 cookies = fetch_from_chrome.get_cookie_string()
-                ppd_client.update_cookies(cookies)
+                ppd_sim_client.update_cookies(cookies)
                 # no_more_money = fetch_from_chrome.is_account_money_low()
 
                 # if current_page < total_page:
@@ -67,10 +70,12 @@ def main():
                 #     fetch_from_chrome.click_to_next_page()
                 #     time.sleep(1.5)
                 # else:
-                fetch_from_chrome.refresh_loan_list_page()
+                # fetch_from_chrome.refresh_loan_list_page()
+                #
+                # listing_ids, current_page, total_page = fetch_from_chrome.get_all_listing_items()
 
-                listing_ids, current_page, total_page = fetch_from_chrome.get_all_listing_items()
-                if len(listing_ids) == 0:
+                listing_ids = ppd_open_client.get_loan_list_ids("B", 6)
+                if not listing_ids:
                     continue
 
                 send_detail_request_num = 0
@@ -79,7 +84,7 @@ def main():
                         continue
 
                     listing_ids_cache.append(int(listing_id))
-                    item = ppd_client.get_detail_info(listing_id)
+                    item = ppd_sim_client.get_detail_info(listing_id)
                     send_detail_request_num += 1
                     if item is None:
                         continue
@@ -93,15 +98,24 @@ def main():
                         df = PandasUtils.save_item_to_csv(data_file_path, df, item)
                         continue
 
-                    winsound.PlaySound('finish.wav', winsound.SND_ASYNC)
-                    if not ppd_client.check_bid_number(item):
+                    if not ppd_sim_client.check_bid_number(item):
                         df = PandasUtils.save_item_to_csv(data_file_path, df, item)
+                        toaster.show_toast("Example two", f"This notification is in it's own thread!{listing_id}",
+                                           icon_path=None,
+                                           duration=10,
+                                           threaded=True)
+                        fetch_from_chrome.driver.get(f"https://invest.ppdai.com/loan/info/{listing_id}")
                         continue
 
                     item["strategy"] = first_strategy.name
-                    if ppd_client.bid_by_request(item):
+                    if ppd_sim_client.bid_by_request(item):
                         logger.log(21, f"bid:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
 
+                    toaster.show_toast("Example two", f"This notification is in it's own thread!{listing_id}",
+                                       icon_path=None,
+                                       duration=10,
+                                       threaded=True)
+                    fetch_from_chrome.driver.get(f"https://invest.ppdai.com/loan/info/{listing_id}")
                     df = PandasUtils.save_item_to_csv(data_file_path, df, item)
 
                 time.sleep(2 * send_detail_request_num)
@@ -110,7 +124,7 @@ def main():
                 time.sleep(60 * 15)
             except Exception as ex:
                 logger.info(ex, exc_info=True)
-                time.sleep(60 * 15)
+                time.sleep(3)
 
     restore_config()
     pass
@@ -120,4 +134,16 @@ if __name__ == "__main__":
     logger = CommonUtils.setup_logging()
 
     main()
+    # toaster = ToastNotifier()
+    # toaster.show_toast("Example two", f"This notification is in it's own thread!{111}",
+    #                                    icon_path=None,
+    #                                    duration=2,
+    #                                    threaded=True)
+    #
+    # toaster.show_toast("Example two", f"This notification is in it's own thread!{123}",
+    #                                    icon_path=None,
+    #                                    duration=2,
+    #                                    threaded=True)
+    # logger.info("sleep")
+    # time.sleep(5)
     logger.info("end")

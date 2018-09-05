@@ -39,6 +39,7 @@ class PpdUISimulationRequest:
         key_dict["listingId"] = "listingId"
         key_dict["creationDate"] = "creationDate"
         key_dict["User"] = "User"
+        key_dict["title"] = "title"
 
         key_dict["amount"] = "借款金额"
         key_dict["creditCode"] = "级别"
@@ -187,8 +188,11 @@ class PpdUISimulationRequest:
         borrower_statistics = json_data["resultContent"]["loanerStatistics"]
         borrower_statistics["successNum"] = json_data["resultContent"]["loanerStatistics"]["listingStatics"][
             "successNum"]
-        borrower_statistics["firstSuccessDate"] = json_data["resultContent"]["loanerStatistics"]["listingStatics"][
-            "firstSuccessDate"]
+
+        if "firstSuccessDate" in borrower_statistics["listingStatics"]:
+            borrower_statistics["firstSuccessDate"] = borrower_statistics["listingStatics"]["firstSuccessDate"]
+        else:
+            borrower_statistics["firstSuccessDate"] = None
         borrower_statistics["listingId"] = listing_id
 
         return borrower_statistics
@@ -269,7 +273,7 @@ class PpdUISimulationRequest:
 
         data_list = json_data["resultContent"]["dataList"]
         if len(data_list) != 1:
-            self.logger.warning(f"check_bid_number {listing_id} {loan_amount} count != 1: {json.dumps(data_list, ensure_ascii=False)}")
+            self.logger.warning(f"check_bid_number {listing_id} {loan_amount} count = {len(data_list)}: {json.dumps(data_list, ensure_ascii=False)}")
             return False
 
         verify_item = data_list[0]
@@ -295,13 +299,13 @@ class PpdUISimulationRequest:
                 "bidNum": 100,
                 "bidStatusDTO": None,
                 "amount": 17400,
-                "bids": 233,
+                "bids": 5,
                 "borrowerName": "pdu0****77408",
                 "certificateValidate": 0,
                 "creditCode": "B",
                 "creditValidate": 0,
                 "currentRate": 20,
-                "funding": 16484,
+                "funding": 14,
                 "isPay": False,
                 "listingId": 125233286,
                 "mobileRealnameValidate": 1,
@@ -344,8 +348,8 @@ class PpdUISimulationRequest:
         data_item["creditCode"] = item["级别"]
         data_item["months"] = Utils.convert_to_int(item["期限"])
         data_item["title"] = item["title"]
-        data_item["bids"] = Utils.convert_to_int(item["投标人数"])
-        data_item["funding"] = Utils.convert_to_int(item["进度"]) * loan_amount / 100
+        # data_item["bids"] = Utils.convert_to_int(item["投标人数"])
+        # data_item["funding"] = Utils.convert_to_int(item["进度"]) * loan_amount / 100
         data_item["currentRate"] = Utils.convert_to_int(item["协议利率"])
         # post_data = '{"authInfo":"","authenticated":true,"availableBalance":279.08,"bidStatusDTOs":[],"creditCodes":"3","dataList":[{"bidNum":100,"bidStatusDTO":null,"amount":17400,"bids":233,"borrowerName":"pdu0****77408","certificateValidate":0,"creditCode":"B","creditValidate":1,"currentRate":20,"funding":16484,"isPay":false,"listingId":125233286,"mobileRealnameValidate":1,"months":12,"nCIICIdentityCheck":0,"statusId":1,"title":"手机app用户的第17次闪电借款"}],"didIBid":"1","ip":"101.41.247.234","maxAmount":17400,"minAmount":17400,"months":"1,2,3,4","needTotalCount":true,"pageCount":1,"pageIndex":1,"pageSize":10,"rates":"","riskLevelCategory":1,"sort":0,"source":1,"successLoanNum":"3","totalCount":1,"userId":87288708,"sigleBidAmount":50,"bidCount":1,"useCoupon":true}'
 

@@ -23,12 +23,14 @@ class PpdOpenClient:
         self.access_token = "748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca"
 
         self.listing_id_cache = deque(maxlen=1000)
+
+        self.loan_list_time_delta_sec = -300
         pass
 
-    def get_loan_list(self):
+    def get_loan_list(self, time_delta_secs=-300):
         url = "https://openapi.ppdai.com/listing/openapiNoAuth/loanList"
         # start_date_time = datetime.utcnow()
-        start_date_time = datetime.now() + timedelta(minutes=-5)
+        start_date_time = datetime.now() + timedelta(seconds=time_delta_secs)
         data = {
             "PageIndex": "1",
             "StartDateTime": (start_date_time + timedelta(seconds=-3)).strftime('%Y-%m-%d %H:%M:%S')
@@ -138,17 +140,27 @@ class PpdOpenClient:
 
     def get_loan_list_ids(self, credit_code: str, month: int):
         new_listing_id = None
-        result = self.get_loan_list()
+        result = self.get_loan_list(self.loan_list_time_delta_sec)
         try:
             json_data = json.loads(result)
             if json_data.get("Result", -999) != 1:
                 self.logger.error(f"get_loan_list: {json_data}")
                 return new_listing_id
 
-            listing_ids = [item["ListingId"] for item in json_data["LoanInfos"] if item["Months"] == month and item["CreditCode"] == credit_code]
+            loan_infos = json_data["LoanInfos"]
+            loan_infos_len = len(loan_infos)
+
+            if loan_infos_len < 100:
+                self.logger.info(f"{loan_infos_len} {self.loan_list_time_delta_sec}")
+                self.loan_list_time_delta_sec *= 1.1
+            elif loan_infos_len > 150:
+                self.logger.info(f"{loan_infos_len} {self.loan_list_time_delta_sec}")
+                self.loan_list_time_delta_sec *= 0.9
+
+            listing_ids = [item["ListingId"] for item in loan_infos if item["Months"] == month and item["CreditCode"] == credit_code]
             new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
             if new_listing_id is not None and len(new_listing_id) != 0:
-                self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)}, {len(json_data['LoanInfos'])}  {new_listing_id}")
+                self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)}, {loan_infos_len}  {new_listing_id}")
             else:
                 # self.logger.info("No more data")
                 return None

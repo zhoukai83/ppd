@@ -82,9 +82,9 @@ def test_overdue():
 
 def main():
     test_ui()
-    test_ui_today()
+    # test_ui_today()
 
-    test_last_item()
+    # test_last_item()
     # test_overdue()
     # test_ui_base_strategy_factory()
 

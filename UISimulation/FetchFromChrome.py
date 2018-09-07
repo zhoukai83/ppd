@@ -136,3 +136,11 @@ class FetchFromChrome():
 
         return listing_ids, current_page, total_page,
 
+    def is_account_money_low(self):
+        self.wait_until_css(".router-link__balance", timeout=2, show_timeout_log=False)
+
+        try:
+            account_money = Utils.convert_to_float(self.driver.find_element_by_css_selector(".router-link__balance").text)
+        except Exception:
+            return False
+        return account_money < 50

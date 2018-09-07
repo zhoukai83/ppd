@@ -8,39 +8,22 @@ import queue
 import time
 
 import sys
-sys.path.insert(0,'..')
+
+sys.path.insert(0, '..')
 
 from Open.BidStrategyTask import BidStrategyTask
 from Open.BidTask import BidTask
 from Open.FetchLoanListTask import FetchLoanListTask
-from Open.FetchListingInfoTask import  FetchListingInfoTask
+from Open.FetchListingInfoTask import FetchListingInfoTask
 from Open.SaveLoanListTask import SaveLoanListTask
 from Open.SaveListingInfoTask import SaveListingInfoTask
 from Open.SaveBidListingTask import SaveBidListingTask
-
-
 from Open import Utils as OpenUtils
+from Common import Utils
+
 
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='gbk')
 
-def setup_logging(default_path='logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
-    """Setup logging configuration
-
-    """
-    path = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            config = json.load(f)
-        logging.config.dictConfig(config)
-    else:
-        logging.basicConfig(level=default_level)
-
-    logger = logging.getLogger(__name__)
-    logger.info("start")
-    return logger
 
 def terminate_task(t):
     t.terminate = True
@@ -74,7 +57,8 @@ def main():
 
     pass
 
+
 if __name__ == "__main__":
-    logger = setup_logging()
+    logger = Utils.setup_logging()
     main()
     # test()

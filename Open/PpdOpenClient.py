@@ -27,11 +27,11 @@ class PpdOpenClient:
 
     def get_loan_list(self):
         url = "https://openapi.ppdai.com/listing/openapiNoAuth/loanList"
-        start_date_time = datetime.utcnow()
-
+        # start_date_time = datetime.utcnow()
+        start_date_time = datetime.now() + timedelta(minutes=-5)
         data = {
             "PageIndex": "1",
-            "StartDateTime": (start_date_time + timedelta(minutes=-10)).strftime('%Y-%m-%d %H:%M:%S')
+            "StartDateTime": (start_date_time + timedelta(seconds=-3)).strftime('%Y-%m-%d %H:%M:%S')
         }
 
         result = self.post(url, data=data)
@@ -137,22 +137,26 @@ class PpdOpenClient:
         pass
 
     def get_loan_list_ids(self, credit_code: str, month: int):
-        new_listing_ids = None
+        new_listing_id = None
         result = self.get_loan_list()
-        json_data = json.loads(result)
-        if json_data.get("Result", -999) != 1:
-            self.logger.error(f"get_loan_list: {json_data}")
-            return new_listing_ids
+        try:
+            json_data = json.loads(result)
+            if json_data.get("Result", -999) != 1:
+                self.logger.error(f"get_loan_list: {json_data}")
+                return new_listing_id
 
-        listing_ids = [item["ListingId"] for item in json_data["LoanInfos"] if item["Months"] == month and item["CreditCode"] == credit_code]
-        new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
-        if new_listing_id is not None and len(new_listing_id) != 0:
-            self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)},  {new_listing_id}")
-        else:
-            # self.logger.info("No more data")
-            return None
+            listing_ids = [item["ListingId"] for item in json_data["LoanInfos"] if item["Months"] == month and item["CreditCode"] == credit_code]
+            new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
+            if new_listing_id is not None and len(new_listing_id) != 0:
+                self.logger.info(f"生产者生产了: {len(new_listing_id)} in {len(listing_ids)}, {len(json_data['LoanInfos'])}  {new_listing_id}")
+            else:
+                # self.logger.info("No more data")
+                return None
 
-        self.listing_id_cache.extend(new_listing_id)
+            self.listing_id_cache.extend(new_listing_id)
+        except Exception as ex:
+            self.logger.info(f"get_loan_list_ids exception: {ex} result: {result}", exc_info=True)
+
         return new_listing_id
 
 
@@ -179,7 +183,9 @@ def main():
         # openid = "a27effb5cc9f4d2fad1053642a155fe1"
         # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
         # print(client.refresh_token(openid, refresh_token))
-        print(client.get_bid_list())
+
+        print(client.get_loan_list_ids("B", 6))
+        print(client.get_loan_list())
     except Exception as ex:
         print(ex)
     pass

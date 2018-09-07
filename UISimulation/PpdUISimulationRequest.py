@@ -6,7 +6,15 @@ import requests
 from Common import Utils
 
 
-class NeedSleepException(Exception):
+class PpdNeedSleepException(Exception):
+    pass
+
+
+class PpdResultContentNullException(Exception):
+    pass
+
+
+class PpdNotEnoughMoneyException(Exception):
     pass
 
 
@@ -122,7 +130,7 @@ class PpdUISimulationRequest:
             self.logger.warning(f"get_show_listing_base_info f{listing_id}: return f{json_data}")
 
             if result_code == 1012:
-                raise NeedSleepException
+                raise PpdNeedSleepException
             return None
 
         base_info = json_data["resultContent"]["listing"]
@@ -147,7 +155,7 @@ class PpdUISimulationRequest:
             self.logger.warning(f"get_show_borrower_info f{listing_id}: return f{json_data}")
 
             if result_code == 1012:
-                raise NeedSleepException
+                raise PpdNeedSleepException
 
         borrower_info = json_data["resultContent"]
         borrower_info["listingId"] = listing_id
@@ -183,7 +191,10 @@ class PpdUISimulationRequest:
             self.logger.warning(f"get_show_borrower_info f{listing_id}: return f{json_data}")
 
             if result_code == 1012:
-                raise NeedSleepException
+                raise PpdNeedSleepException
+
+        if "loanerStatistics" not in json_data["resultContent"]:
+            raise PpdResultContentNullException
 
         borrower_statistics = json_data["resultContent"]["loanerStatistics"]
         borrower_statistics["successNum"] = json_data["resultContent"]["loanerStatistics"]["listingStatics"][
@@ -219,16 +230,17 @@ class PpdUISimulationRequest:
             else:
                 item = self.change_key({**json_data[0], **json_data[1], **json_data[2]})
             self.logger.info(json.dumps(item, indent=4,  ensure_ascii=False))
-        except NeedSleepException:
+        except PpdNeedSleepException:
             raise
+        except PpdResultContentNullException:
+            self.logger.warning(f"can not get {listing_id} detail info:")
         except Exception as ex:
-            self.logger.info(f"get {listing_id} detail info: {ex}")
+            self.logger.error(f"get {listing_id} detail info: {ex}", exc_info=True)
 
         return item
 
     def check_bid_number(self, item):
         loan_amount = Utils.convert_to_int(item["借款金额"])
-        self.logger.info(f"check bid number: {item['listingId']}, {loan_amount}")
         headers = self.headers
         headers["Referer"] = f"https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=3&period=2&auth=&money={loan_amount},{loan_amount}"
         url = "https://invest.ppdai.com/api/invapi/ListingListAuthService/listingPagerAuth"
@@ -264,25 +276,35 @@ class PpdUISimulationRequest:
         req = session.post(url, data=post_data, headers=headers)
         result = req.text
 
-        json_data = json.loads(result)
-        listing_id = item['listingId']
+        try:
+            json_data = json.loads(result)
+            listing_id = item['listingId']
 
-        if json_data.get("result", -999) != 1 or "resultContent" not in json_data or "dataList" not in json_data["resultContent"]:
-            self.logger.warning(f"check_bid_number {listing_id}: {json.dumps(result, ensure_ascii=False)}")
-            return False
+            if json_data.get("result", -999) != 1 or "resultContent" not in json_data or "dataList" not in json_data["resultContent"]:
+                self.logger.warning(f"check_bid_number {listing_id}: {json.dumps(result, ensure_ascii=False)}")
+                return False
 
-        data_list = json_data["resultContent"]["dataList"]
-        if len(data_list) != 1:
-            self.logger.warning(f"check_bid_number {listing_id} {loan_amount} count = {len(data_list)}: {json.dumps(data_list, ensure_ascii=False)}")
-            return False
+            data_list = json_data["resultContent"]["dataList"]
+            not_full_list = data_list
+            if len(data_list) != 1:
+                not_full_list = [item for item in data_list if item["amount"] > item["funding"]]
+                if len(not_full_list) != 1:
+                    self.logger.warning(f"check_bid_number {listing_id} {loan_amount} count = {len(not_full_list)},{len(data_list)}: {json.dumps(not_full_list, ensure_ascii=False)}")
+                    return False
 
-        verify_item = data_list[0]
-        if verify_item["listingId"] != int(item["listingId"]):
-            self.logger.warning(f"check_bid_number {listing_id} listing id changed: {json.dumps(result, ensure_ascii=False)}")
-            return False
+            verify_item = not_full_list[0]
+            if verify_item["listingId"] != int(item["listingId"]):
+                self.logger.warning(f"check_bid_number {listing_id} listing id changed: {json.dumps(result, ensure_ascii=False)}")
+                return False
 
-        return True
+            self.logger.info(f"check bid number: {item['listingId']}, {loan_amount}, {len(not_full_list)},{len(data_list)}")
+            return True
+        except Exception as ex:
+            self.logger.error(f"check_bid_number {ex} {result}", exc_info=True)
 
+        return False
+
+    # {"result": 1006, "resultMessage": "余额不足"}
     def bid_by_request(self, item):
         headers = self.headers
         headers["Referer"] = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=&pageIndex=1&period=&sex=male&money=,&times=&auth=&rate="
@@ -318,7 +340,7 @@ class PpdUISimulationRequest:
             "ip": "101.41.247.234",  # must
             "maxAmount": 17400,  # must
             "minAmount": 17400,  # must
-            "months": "1,2,3,4",
+            "months": "2",
             "needTotalCount": True,
             "pageCount": 1,
             "pageIndex": 1,
@@ -337,16 +359,24 @@ class PpdUISimulationRequest:
 
         data["maxAmount"] = loan_amount
         data["minAmount"] = loan_amount
+        month = Utils.convert_to_int(item["期限"])
+        if month == 3:
+            bid_month_type = 1
+        elif month == 6:
+            bid_month_type = 2
+        else:
+            raise ValueError(f"Unknown month type for bid sim: {month}")
+
         data["ip"] = "60.247.80.142"  # 60.247.80.142   work    ;      101.41.247.234  hone
         data["riskLevelCategory"] = 1  # 0:  保守； 1:平衡  2：进取
-        data["months"] = item["期限"]
+        data["months"] = bid_month_type
 
         data_item = data["dataList"][0]
         data_item["listingId"] = item["listingId"]
         data_item["amount"] = loan_amount
         data_item["borrowerName"] = item["User"]
         data_item["creditCode"] = item["级别"]
-        data_item["months"] = Utils.convert_to_int(item["期限"])
+        data_item["months"] = month
         data_item["title"] = item["title"]
         # data_item["bids"] = Utils.convert_to_int(item["投标人数"])
         # data_item["funding"] = Utils.convert_to_int(item["进度"]) * loan_amount / 100
@@ -362,8 +392,14 @@ class PpdUISimulationRequest:
 
         json_data = json.loads(result)
         listing_id = item['listingId']
-        if "result" not in json_data:
+        result_code = json_data.get("result", -999)
+
+        if result_code == -999:
             self.logger.warning(f"bid by request result error {listing_id}: {result}")
+            return False
+        elif result_code == 1006:
+            self.logger.warning(f"bid by request not enough money {listing_id}: {result}")
+            raise PpdNotEnoughMoneyException
             return False
 
         if json_data["result"] != 1:

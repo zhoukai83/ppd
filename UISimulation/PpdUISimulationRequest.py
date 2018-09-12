@@ -3,6 +3,8 @@ import asyncio
 from aiohttp import ClientSession
 import json
 import requests
+import os
+from itertools import groupby
 from Common import Utils
 
 
@@ -34,7 +36,7 @@ class PpdUISimulationRequest:
             "Referer": "https://invest.ppdai.com/loan/info/",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; regSourceId=0; referID=0; fromUrl=; referDate=2018-8-6%2013%3A57%3A16; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; token=2fdc8033594dfea0e1aa6a7ef7093f57c0207fbe8c4b646107b590de965acacb9b6548480c27c14b50; __eui=Cel3wwogQQUMvl7O%2BveuJQ%3D%3D; aliyungf_tc=AQAAAPE3XS/iIQcAjlD3PPUGI1ze/SOB; __utmc=1; currentUrl=https%3A%2F%2Finvest.ppdai.com%2Floan%2Flistnew%3Floancategoryid%3D4%26creditcodes%3D%26listtypes%3D%26rates%3D%26months%3D%26authinfo%3D%26borrowcount%3D%26didibid%3D%26sorttype%3D0%26minamount%3D0%26maxamount%3D0; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1534748481; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1535703865; __tsid=262473610; __vsr=1535681360481.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1535688584670.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV2%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1535694991046.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1535703859421.refSite%3Dhttps%3A//www.ppdai.com/moneyhistory%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1535706439890.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; __utma=1.1098278737.1530780657.1535682387.1535944602.37; __utmz=1.1535944602.37.37.utmcsr=ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/moneyhistory; registerurl=https%3A%2F%2Fpay.ppdai.com%2Fdeposit%2Fprocessing%3Ftradeid%3D180903064000093766; registersourceurl=https%3A%2F%2Fppdai.cloud.cmbchina.com%2Frecharge%3Fsecret%3Db5bhbwmwrxuwsmvvmnqttzvtym1ubpqxim3tftkptfis3f7o42jsgehovtxmi2whk3tycorayylhx%252bgupo6i6%252fsigmo5enlv%252bbfy8w8jw1dms5uaxyw61vdaxvmpyjj2ejyi7zjfthdyqttpn3wkb7hlwfos3lwyskvcjzv9wafyzwkulq8onjrlkpxf%252bzrk7zkx3z%252bc3yozullipwn89hqem%252b1qlukluz9jtajhym1jwjunnp1lczstpoyronejov660lt8vpq%252f849dvxw84n23lxg%252bostb5jhmpwk8uxqloej4lda6il6luosvgxzgp72tycrgrhzpz7qkonluzksq6%252bml84lt7tfavr4onsefmhdmdnbc%252fitgsphv27lw%252fqxsw2hgw72hbujhmf%252flnzop5cpm4voo8urnlgpr69otonzenixsuskr034w34dy9gp77z3ery28wkbsxpai1pdrxsyxyf3clnpywph6npx53luwazmdavgrhid0kt7tbgjby7jigfqntec9fqf5avkqwfcebnitt1ihetpyrjtkatxymevlsf4xq0c5qpicezmuyenu923yle40rwncne42dbcfwbwxz4rvylkhqrizmu%252bqd0vdoxykc7nsr8elcuxujjvdvbse30j%252bobkpacgewazgio5ckduj8e3qkeq%253d; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1535427469,1535601903,1535682414,1535944641; payDatetimeCookie=2018-09-03+11%3a16%3a22; Hm_lpvt_aab1030ecb68cd7b5c613bd7a5127a40=1535944643; __sid=1535963508544.1.1535963508544; waterMarkTimeCheck1=09%2F03%2F2018+16%3A31%3A49; JSESSIONID=72E1B532B743F4AE17C3A3E6136BB548",
+            "Cookie": "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; aliyungf_tc=AQAAAMnXqFNNhAkAjlD3PNp9f8+DQ1f4; token=2fdc8033594dfea0e1aa6a7ef7093f57c0207fbe8c4b646107b590de965acacb9b6548480c27c14b50; __eui=Cel3wwogQQUMvl7O%2BveuJQ%3D%3D; __utmc=1; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1534748481; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; regSourceId=0; referID=0; fromUrl=https%3A%2F%2Fwww.ppdai.com%2Fmoneyhistory; referDate=2018-9-5%2014%3A43%3A29; __tsid=262473610; __utma=1.1098278737.1530780657.1536129813.1536225897.39; __utmz=1.1536225897.39.39.utmcsr=ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/moneyhistory; registerurl=https%3A%2F%2Fpay.ppdai.com%2Fdeposit%2Fprocessing%3Ftradeid%3D180906064000215167; registersourceurl=https%3A%2F%2Fppdai.cloud.cmbchina.com%2Frecharge%3Fsecret%3Dp8cqa0nd5qipg%252f5oktxiuwae%252fe%252bm9x2zafjtu8zvf9nn%252f9ysoeowj0db2eo0enuizy%252fzbfpquzor9mts%252b7bfepgzbtfezoplnbmeomgb8o2myymbwfqpabeoog1dknnlo1k4hhwf3ut1qnrcbmpp00wmr7oh5dum0%252fpxnwveesqs1vbihuu%252bt%252flxdysavefoaitpprl0p1ehfqi8gw5iyltfddjk0el%252bbiq9nxr7o1colhfm0rvqvy4igxwexixxbwlosqzvglnorg6lqmp7swkvtnhsmpa4%252fqgsl1n%252fbqsb0m%252flozx3y9%252ft%252fdsyawilor%252fg3upq0dtqovptcs%252frq3gmncrbnhpnwtkof79xeobshlch1bqxmn%252f9t9remizorbqsfax%252fio8dqhnblhcv%252fzcnae8qnhwqnplodux0h6yj6nad2z7zb5kvsb6szyl4bswufwwqednebmzuavlxlzhfxnhobiskdrqfkvbzb23ofrdxuffviqgs1dpxov95cz9phjjgp32j%252fohbtjwfnp8brc4rdolq4mj1n8h9acewiam3rimijfaxxgsludvftqb4dh%252f8tsa%252buay1waulx1ktomnh0heudj7%252b9x7vy6h2uwty3lkvrbcl%252bt0fiutlmn8fx1qd0zgdtgvl0r0ha1cgsamsg7f7xitjfbsyylw%253d; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1535682414,1535944641,1536129839,1536225984; Hm_lpvt_aab1030ecb68cd7b5c613bd7a5127a40=1536225994; __vsr=1536200501925.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1536290299195.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV2%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1536296126221.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1536652748146.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV2%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1536656228787.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; currentUrl=https%3A%2F%2Finvest.ppdai.com%2Faccount%2Fcoupon; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1536738636; gr_session_id_b9598a05ad0393b9=8596c26a-50a8-4d9a-bfbc-1e899035fe9e; gr_cs1_8596c26a-50a8-4d9a-bfbc-1e899035fe9e=user_name%3Apdu8953799660; gr_session_id_b9598a05ad0393b9_8596c26a-50a8-4d9a-bfbc-1e899035fe9e=true; waterMarkTimeCheck1=09%2F12%2F2018+16%3A09%3A01; __sid=1536732121932.45.1536740360495",
         }
 
     def update_cookies(self, cookies):
@@ -115,14 +117,21 @@ class PpdUISimulationRequest:
 
     async def get_show_listing_base_info(self, listing_id: int):
         self.headers["Referer"] = "https://invest.ppdai.com/loan/info/" + str(listing_id)
+        file_path = f"..\\data\\showListingBaseInfo\\showListingBaseInfo_{listing_id}.json"
         url = "https://invest.ppdai.com/api/invapi/LoanDetailPcService/showListingBaseInfo"
         data = {
             "listingId": str(listing_id),
             "source": 1}
 
+        # if os.path.exists(file_path):
+        #     self.logger.info("get_show_listing_base_info from file")
+        #     with open(file_path, "r", encoding="utf-8") as f:
+        #         result = f.read()
+        #         json_data = json.loads(result)
+        # else:
         result = await self.post_data(url, data, self.headers)
         json_data = json.loads(result)
-        with open(f"..\\data\\showListingBaseInfo\\showListingBaseInfo_{listing_id}.json", "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
         result_code = json_data.get("result", -999)
@@ -140,14 +149,22 @@ class PpdUISimulationRequest:
 
     async def get_show_borrower_info(self, listing_id: int):
         self.headers["Referer"] = "https://invest.ppdai.com/loan/info/" + str(listing_id)
+        file_path = f"..\\data\\showBorrowerInfo\\showBorrowerInfo_{listing_id}.json"
         url = "https://invest.ppdai.com/api/invapi/LoanDetailPcService/showBorrowerInfo"
         data = {
             "listingId": str(listing_id),
             "source": 1}
 
+        # if os.path.exists(file_path):
+        #     self.logger.info("get_show_borrower_info from file")
+        #     with open(file_path, "r", encoding="utf-8") as f:
+        #         result = f.read()
+        #         json_data = json.loads(result)
+        # else:
         result = await self.post_data(url, data, self.headers)
         json_data = json.loads(result)
-        with open(f"..\\data\\showBorrowerInfo\\showBorrowerInfo_{listing_id}.json", "w", encoding="utf-8") as f:
+
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
         result_code = json_data.get("result", -999)
@@ -176,14 +193,22 @@ class PpdUISimulationRequest:
 
     async def get_borrower_statistics(self, listing_id: int):
         self.headers["Referer"] = "https://invest.ppdai.com/loan/info/" + str(listing_id)
+        file_path = f"..\\data\\showBorrowerStatistics\\showBorrowerStatistics_{listing_id}.json"
         url = "https://invest.ppdai.com/api/invapi/LoanDetailPcService/showBorrowerStatistics"
         data = {
             "listingId": str(listing_id),
             "source": 1}
 
+        # if os.path.exists(file_path):
+        #     self.logger.info("get_borrower_statistics from file")
+        #     with open(file_path, "r", encoding="utf-8") as f:
+        #         result = f.read()
+        #         json_data = json.loads(result)
+        # else:
         result = await self.post_data(url, data, self.headers)
         json_data = json.loads(result)
-        with open(f"..\\data\\showBorrowerStatistics\\showBorrowerStatistics_{listing_id}.json", "w", encoding="utf-8") as f:
+
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(json_data, indent=4, ensure_ascii=False))
 
         result_code = json_data.get("result", -999)
@@ -239,8 +264,47 @@ class PpdUISimulationRequest:
 
         return item
 
+    def batch_get_detail_infs(self, listing_ids: list):
+        item_list = []
+        try:
+            tasks = []
+            loop = asyncio.get_event_loop()
+
+            client = PpdUISimulationRequest()
+
+            for listing_id in listing_ids:
+                task = asyncio.ensure_future(client.get_show_listing_base_info(listing_id))
+                tasks.append(task)
+
+                task = asyncio.ensure_future(client.get_show_borrower_info(listing_id))
+                tasks.append(task)
+
+                task = asyncio.ensure_future(client.get_borrower_statistics(listing_id))
+                tasks.append(task)
+
+            json_data = loop.run_until_complete(asyncio.gather(*tasks))
+            json_data.sort(key=lambda content: content['listingId'])
+            groups = groupby(json_data, lambda content: content['listingId'])
+            for listing_id, group in groups:
+                group = list(group)
+                if len(group) != 3:
+                    self.logger.warning(json.dumps(group, ensure_ascii=False))
+                else:
+                    item = self.change_key({**group[0], **group[1], **group[2]})
+                    item_list.append(item)
+                    self.logger.info(json.dumps(item, indent=4, ensure_ascii=False))
+        except PpdNeedSleepException:
+            raise
+        except PpdResultContentNullException:
+            self.logger.warning(f"can not get {listing_ids} detail info:")
+        except Exception as ex:
+            self.logger.error(f"get {listing_ids} detail info: {ex}", exc_info=True)
+
+        return item_list
+
     def check_bid_number(self, item):
-        loan_amount = Utils.convert_to_int(item["借款金额"])
+        # loan_amount = Utils.convert_to_int(item["借款金额"])
+        loan_amount = item["借款金额"]
         headers = self.headers
         headers["Referer"] = f"https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3&pageIndex=1&times=3&period=2&auth=&money={loan_amount},{loan_amount}"
         url = "https://invest.ppdai.com/api/invapi/ListingListAuthService/listingPagerAuth"
@@ -270,8 +334,18 @@ class PpdUISimulationRequest:
         data["minAmount"] = loan_amount
         data["maxAmount"] = loan_amount
 
-        post_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        # month = Utils.convert_to_int(item["期限"])
+        month = item["期限"]
+        if month == 3:
+            bid_month_type = 1
+        elif month == 6:
+            bid_month_type = 2
+        else:
+            raise ValueError(f"Unknown month type for bid sim: {month}")
 
+        data["months"] = bid_month_type
+
+        post_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
         session = requests.Session()
         req = session.post(url, data=post_data, headers=headers)
         result = req.text
@@ -412,15 +486,17 @@ class PpdUISimulationRequest:
         # logger.info(f"bid by request: {json.dumps(req.text, ensure_ascii=False)}")
         pass
 
+
+
 def main():
     # tasks = []
     # loop = asyncio.get_event_loop()
     #
     # logger.info("start send")
-    id = 127092772
+    id = 128078947
 
     client = PpdUISimulationRequest()
-    client.get_detail_info(id)
+    logger.info(client.batch_get_detail_infs([id, 128080987]))
     # task = asyncio.ensure_future(client.get_show_listing_base_info(id))
     # tasks.append(task)
     #

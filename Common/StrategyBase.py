@@ -104,7 +104,7 @@ class StrategyBase:
                     self.logger.error("not support")
                     filter_item_result = False
             else:
-                self.logger.error("not support")
+                self.logger.error(f"not support {filter_item_compare}")
                 filter_item_result = False
 
             if show_full_log:

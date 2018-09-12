@@ -48,7 +48,7 @@ def main():
         df = pd.read_csv(data_file_path, encoding="utf-8")
         listing_ids_cache = deque(df["listingId"].tail(1000).tolist(), maxlen=1000)
     else:
-        listing_ids_cache = deque(maxlen=1000)
+        listing_ids_cache = deque(maxlen=400)
 
     config = refresh_config()
 
@@ -59,22 +59,12 @@ def main():
                 if no_more_money:
                     sleep_time = sleep_time + 3
                 time.sleep(sleep_time)
-                # logger.info(sleep_time)
                 config = refresh_config()
-                if config["Status"] == "Pause":
-                    continue
-
                 cookies = fetch_from_chrome.get_cookie_string()
                 ppd_sim_client.update_cookies(cookies)
 
                 if no_more_money:
                     no_more_money = fetch_from_chrome.is_account_money_low()
-
-                # if current_page < total_page:
-                #     logger.info(f"click to next page: {current_page} {total_page}")
-                #     fetch_from_chrome.click_to_next_page()
-                #     time.sleep(1.5)
-                # else:
 
                 # logger.info("...")
                 if time.time() - last_refresh_list_time > config["RefreshTime"]:
@@ -82,57 +72,47 @@ def main():
                     last_refresh_list_time = time.time()
                     listing_ids, current_page, total_page = fetch_from_chrome.get_all_listing_items()
                 else:
-                    listing_ids = ppd_open_client.get_loan_list_ids("B", 6)
+                    listing_ids = ppd_open_client.get_loan_list_ids(["A", "B", "C", "D"], [3, 6])
 
                 if not listing_ids:
                     continue
 
-                send_detail_request_num = 0
-                for listing_id in listing_ids:
-                    if int(listing_id) in listing_ids_cache:
-                        continue
+                listing_detail_list = []
 
-                    listing_ids_cache.append(int(listing_id))
-                    item = ppd_sim_client.get_detail_info(listing_id)
-                    send_detail_request_num += 1
-                    if item is None:
-                        continue
+                listing_ids = [int(listing_id) for listing_id in listing_ids if int(listing_id) not in listing_ids_cache]
+                listing_ids_cache.appendleft(listing_ids)
+                if len(listing_ids) == 0:
+                    continue
+                elif len(listing_ids) == 1:
+                    item = ppd_sim_client.get_detail_info(listing_ids[0])
+                    listing_detail_list.append(item)
+                else:
+                    listing_detail_list = ppd_sim_client.batch_get_detail_infs(listing_ids)
 
-                    if no_more_money:
-                        df = PandasUtils.save_item_to_csv(data_file_path, df, item)
+                for item in listing_detail_list:
+                    if item is None or no_more_money:
                         continue
 
                     can_bid, first_strategy = strategy_factory.is_item_can_bid(item)
                     if not can_bid:
-                        df = PandasUtils.save_item_to_csv(data_file_path, df, item)
                         continue
 
                     if not ppd_sim_client.check_bid_number(item):
-                        df = PandasUtils.save_item_to_csv(data_file_path, df, item)
-                        # toaster.show_toast("Example two", f"This notification is in it's own thread!{listing_id}",
-                        #                    icon_path=None,
-                        #                    duration=10,
-                        #                    threaded=True)
-                        fetch_from_chrome.driver.get(f"https://invest.ppdai.com/loan/info/{listing_id}")
                         continue
 
                     item["strategy"] = first_strategy.name
                     if ppd_sim_client.bid_by_request(item):
                         logger.log(21, f"bid:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
 
-                    # toaster.show_toast("Example two", f"This notification is in it's own thread!{listing_id}",
-                    #                    icon_path=None,
-                    #                    duration=10,
-                    #                    threaded=True)
-                    fetch_from_chrome.driver.get(f"https://invest.ppdai.com/loan/info/{listing_id}")
+                if listing_detail_list:
                     df = PandasUtils.save_item_to_csv(data_file_path, df, item)
-
-                time.sleep(2 * send_detail_request_num)
+                    # time.sleep(0.5 * len(listing_detail_list))
             except PpdNeedSleepException as ex:
                 logger.warning(f"NeedSleepException, {ex}")
                 time.sleep(60 * 15)
             except PpdNotEnoughMoneyException as ex:
                 no_more_money = True
+                logger.info("No more money")
                 time.sleep(3)
             except Exception as ex:
                 logger.info(ex, exc_info=True)

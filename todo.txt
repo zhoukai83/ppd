@@ -1,10 +1,34 @@
 提高性能
 1. check_bid_number
-
-1. move some log into xxx
-2. get bid result and retry
 2. 过去6个月有回款记录的逾期天数
 
 
 3. run command remotely using cloud file sync
 start remote control
+
+回测
+
+1. print success list
+xxxx  0逾期
+xxxx  低逾期
+
+2. print total report
+          date  total  success  overlap  低逾期 :逾期<0.02  零逾期  :零逾期 40
+0   2018-09-03    180        0        0             0             0
+1   2018-09-04    128        0        0             0             0
+
+3. print detail
+100001
+B    C
+6    7
+
+100002
+xxxx
+
+4. print failed deatail
+100001
+B   C
+
+100002
+
+5. calc by strategy

@@ -82,27 +82,27 @@ class StrategyFactory:
 
         pass
 
-    def is_item_can_bid(self, item, use_log=True, show_failed_reason=False):
+    def is_item_can_bid(self, item, use_log=True, show_failed_reason=False, show_item_full_log=False):
         can_bid = False
         first_strategy = None
 
         if "listingId" in item:
             listing_id = item["listingId"]
         else:
-            print(item)
             listing_id = item["ListingId"]
 
         for strategy_item in self.strategy_list:
             try:
                 if use_log:
                     self.logger.debug(f"\n{strategy_item}")
-                if strategy_item.is_item_can_bid(item, show_failed_reason=show_failed_reason):
+                if strategy_item.is_item_can_bid(item, show_full_log=show_item_full_log, show_failed_reason=show_failed_reason):
                     if use_log:
                         self.logger.info(f"%s %s {item['借款金额']} %s", "success", listing_id, strategy_item)
                     can_bid = True
 
                     if first_strategy is None and can_bid:
                         first_strategy = strategy_item
+                        return can_bid, first_strategy
             except Exception as e:
                 self.logger.error(f"{listing_id}:  {strategy_item}, {item}", exc_info=True)
 
@@ -126,7 +126,7 @@ class StrategyFactory:
                 if strategy_item.is_item_can_bid(listing_item, use_log, show_failed_reason=show_failed_reason):
                     success += 1
 
-            obj[str(strategy_item)] = success
+            obj[str(strategy_item.name)] = success
             total_succss += success
 
 
@@ -160,6 +160,22 @@ class StrategyFactory:
         new_columns = ['date', 'total', 'success', 'overlap'] + column_names[4:]
         print(df[new_columns])
 
+    def report_passed(self, list_items):
+        success = 0
+
+        for listing_item in list_items:
+
+            if "listingId" in listing_item:
+                listing_id = listing_item["listingId"]
+            else:
+                listing_id = listing_item["ListingId"]
+
+            can_bid, first_strategy = self.is_item_can_bid(listing_item, use_log=False)
+            if can_bid:
+                success += 1
+                self.logger.info(f"passed, {listing_id} {listing_item}")
+
+        self.logger.info(f"Total: {len(list_items)}, passed: {success}")
 
 def test_ui():
     sf = StrategyFactory()

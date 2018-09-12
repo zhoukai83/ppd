@@ -4,6 +4,11 @@ import logging.config
 import pandas as pd
 import time
 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 10000)
+pd.set_option('max_colwidth', 400)
+pd.set_option("display.width", 100)
+
 from Common.OpenStrategy import OpenStrategy
 from Common.StrategyBase import StrategyBase
 from Common.StrategyFactory import StrategyFactory
@@ -12,16 +17,72 @@ from Common.UIStrategyFactory import UIStrategyFactory
 
 file_path = "..\\UISimulation\\UISimMain.csv"
 
+
+class NewStrategyFactory(StrategyFactory):
+    def __init__(self, logger=None):
+        self.logger = logger or logging.getLogger(__name__)
+        self.strategy_list = []
+
+        # if strategy_class is None:
+        strategy_class = StrategyBase
+        self.column_name_create_date = "creationDate"
+
+        # strategy_class = OpenStrategy
+        # self.column_name_create_date = "PreAuditTime"
+        # PreAuditTime
+
+        # base_strategy_c1 = strategy_class("C零逾期 ", "C零逾期60")
+        # base_strategy_c1.add_filters([
+        #     ["级别", "==", "C", "str"],
+        #     ["期限", "<", "7", "int"],
+        #     ["逾期（15天以上）还清次数", "==", "0", "int"],
+        #     ["成功借款次数", "!=", "0", "int"],
+        #     ["逾期（0-15天）还清次数", "==", "0", "int"],
+        #     ["成功还款次数", ">", "60", "int"],  # 40 - 60
+        #     ["本次借款后负债/历史最高负债", "<", "0.93", "rate"],  # 0.7 - 0.96
+        #     ["借款金额/单笔最高借款金额", "<", "0.93", "rate"],
+        #     ["网络借贷平台借款余额", "<", "1", "int"]  # 8000 - 10000
+        # ])
+        # self.strategy_list.append(base_strategy_c1)
+
+        base_strategy_a1 = strategy_class("低逾期A ", "")
+        base_strategy_a1.add_filters([
+            ["级别", "==", "A", "str"],
+            ["期限", "<", "7", "int"],
+            ["逾期（15天以上）还清次数", "==", "0", "int"],
+            ["成功还款次数", ">", "24", "int"],  # 40 - 60
+            ["逾期（0-15天）还清次数/成功还款次数", "<", "0.04", "rate"],
+            ["本次借款后负债/历史最高负债", "<", "0.98", "rate"],  # 0.7 - 0.96
+            ["网络借贷平台借款余额", "<", "8000", "int"]  # 8000 - 10000
+        ])
+        self.strategy_list.append(base_strategy_a1)
+
+        # base_strategy3 = strategy_class("低逾期 ", "逾期<0.02")
+        # base_strategy3.add_filters([
+        #     ["级别", "==", "C", "str"],
+        #     ["期限", "<", "7", "int"],
+        #     ["逾期（15天以上）还清次数", "==", "0", "int"],
+        #     ["成功借款次数", "!=", "0", "int"],
+        #     ["逾期（0-15天）还清次数/成功还款次数", "<", "0.02", "rate"],
+        #     ["成功还款次数", ">", "50", "int"],
+        #     ["本次借款后负债/历史最高负债", "<", "0.93", "rate"],  # 0.7 - 0.95
+        #     ["借款金额/单笔最高借款金额", "<", "0.98", "rate"],
+        #     ["网络借贷平台借款余额", "<", "6000", "int"]
+        # ])
+        # self.strategy_list.append(base_strategy3)
+        pass
+
+
 def test_last_item():
     sf = UIStrategyFactory(logger=logger)
     df = pd.read_csv(file_path, encoding="utf-8")
     df = df[df["期限"] != 12]
 
-    df = df[df["listingId"] == 127171391]
+    df = df[df["listingId"] == 127817865]
     # print(sf.report(df.to_dict('records'), -100))
     records = df.to_dict("records")
     item = records[-1]
-    sf.is_item_can_bid(item, True)
+    sf.is_item_can_bid(item, True, True)
 
 
 def test_ui():
@@ -31,6 +92,24 @@ def test_ui():
     # print(sf.report(df.to_dict('records'), -100))
     sf.report_all(df)
 
+
+def test_c():
+    sf = NewStrategyFactory()
+    df = pd.read_csv(file_path, encoding="utf-8")
+    df = df[(df["期限"] != 12) & (df["级别"] == "C")]
+    # print(sf.report(df.to_dict('records'), -100))
+    # sf.report_all(df)
+    # sf.report(df.to_dict("records"))
+    sf.report_passed(df.to_dict("records"))
+
+def test_a():
+    sf = NewStrategyFactory()
+    df = pd.read_csv(file_path, encoding="utf-8")
+    df = df[(df["期限"] != 12) & (df["级别"] == "A")]
+    # print(sf.report(df.to_dict('records'), -100))
+    # sf.report_all(df)
+    # sf.report(df.to_dict("records"))
+    sf.report_passed(df.to_dict("records"))
 
 def test_ui_today():
     sf = UIStrategyFactory()
@@ -82,6 +161,8 @@ def test_overdue():
 
 def main():
     test_ui()
+
+    # test_a()
     # test_ui_today()
 
     # test_last_item()

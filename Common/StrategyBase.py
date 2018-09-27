@@ -60,8 +60,7 @@ class StrategyBase:
 
             filter_item_result = False
             if filter_item_key not in item and filter_item_value_type != "rate":
-                description = filter_item_key + "not exist"
-                self.logger.info(description)
+                self.logger.info(filter_item_key + "not exist")
                 can_bid = False
                 continue
 
@@ -111,9 +110,7 @@ class StrategyBase:
                 self.logger.debug(f"{str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
 
             if show_failed_reason and not filter_item_result:
-                listing_id = "UnKnown"
-                if "listingId" in item:
-                    listing_id = item["listingId"]
+                listing_id = item.get("listingId", "Unknown")
                 self.logger.info(
                     f"{listing_id} {self.name} {str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
 

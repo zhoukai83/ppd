@@ -157,8 +157,10 @@ class StrategyFactory:
 
         df = pd.DataFrame.from_dict(result_list)
         column_names = list(df.columns.values)
-        new_columns = ['date', 'total', 'success', 'overlap'] + column_names[4:]
+        new_columns = ['date', 'total', 'success', 'overlap'] + list(set(column_names).difference(['date', 'total', 'success', 'overlap']))
+
         print(df[new_columns])
+        return df[new_columns]
 
     def report_passed(self, list_items):
         success = 0

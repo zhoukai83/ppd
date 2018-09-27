@@ -2,11 +2,11 @@
     "MR-EKAIZHO-01": {
         "Sleep": 0.01,
         "RandomSleep": 0,
-        "RefreshTime": 1.8,
-        "Session": "17a175eaf36def04cfe4692791d51377",
+        "RefreshListTime": 1.8,
+        "Session": "d3b46e80c6104336fe045eafea1eb4d1",
         "Status": "Pause1",
         "Terminate": "False",
-        "comments": "total sleep can not 1.2 - 1.3 if using ui,  0.12 using openapi"
+        "comments": "total RefreshListTime can not 1.2 - 1.3 if using ui,  0.12 using openapi"
     },
     "MR-EID-05": {
         "Sleep": 1,

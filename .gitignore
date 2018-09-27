@@ -13,4 +13,5 @@ public/labConfigs/*
 shieldLog/*
 oncalltoollog/*
 mockData/*
+*.pycyc*
 

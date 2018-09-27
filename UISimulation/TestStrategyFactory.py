@@ -2,7 +2,9 @@ import logging
 import logging.config
 
 import pandas as pd
+import pprint
 import time
+import json
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 10000)
@@ -82,6 +84,7 @@ def test_last_item():
     # print(sf.report(df.to_dict('records'), -100))
     records = df.to_dict("records")
     item = records[-1]
+    print(json.dumps(item, ensure_ascii=False))
     sf.is_item_can_bid(item, True, True)
 
 

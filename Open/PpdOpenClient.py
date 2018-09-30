@@ -54,6 +54,17 @@ class PpdOpenClient:
         pass
 
     def get_loan_list(self, page_index=1, time_delta_secs=None, timeout=None):
+        # {
+        #     "Amount": 20000.0,
+        #     "CreditCode": "C",
+        #     "ListingId": 129967042,
+        #     "Months": 12,
+        #     "PayWay": 1,
+        #     "PreAuditTime": "2018-09-28 14:34:14",
+        #     "Rate": 24.0,
+        #     "RemainFunding": 134.0,
+        #     "Title": "手机app用户的借款"
+        # }
         url = "https://openapi.ppdai.com/listing/openapiNoAuth/loanList"
         data = {
             "PageIndex": page_index
@@ -72,6 +83,45 @@ class PpdOpenClient:
         return result
 
     def get_listing_info(self, listing_ids: list):
+        # {
+        #     "Age": 28,
+        #     "Amount": 20000.0,
+        #     "AmountToReceive": 0,
+        #     "AuditingTime": "2018-09-28T14:52:23.683",
+        #     "BorrowName": "pdu0765557327",
+        #     "CancelCount": 0,
+        #     "CertificateValidate": 0,
+        #     "CreditCode": "C",
+        #     "CreditValidate": 0,
+        #     "CurrentRate": 24.0,
+        #     "DeadLineTimeOrRemindTimeStr": "2018/9/28",
+        #     "EducationDegree": null,
+        #     "FailedCount": 0,
+        #     "FirstSuccessBorrowTime": "2015-12-27T17:40:52.933",
+        #     "FistBidTime": "2018-09-28T14:34:20.000",
+        #     "Gender": 2,
+        #     "GraduateSchool": null,
+        #     "HighestDebt": 24661.98,
+        #     "HighestPrincipal": 8000.0,
+        #     "LastBidTime": "2018-09-28T14:52:23.000",
+        #     "LastSuccessBorrowTime": "2018-09-28T14:32:15.000",
+        #     "LenderCount": 179,
+        #     "ListingId": 129967042,
+        #     "Months": 12,
+        #     "NciicIdentityCheck": 0,
+        #     "NormalCount": 90,
+        #     "OverdueLessCount": 4,
+        #     "OverdueMoreCount": 0,
+        #     "OwingAmount": 0.0,
+        #     "OwingPrincipal": 0.0,
+        #     "PhoneValidate": 1,
+        #     "RegisterTime": "2015-12-27T17:33:51.000",
+        #     "RemainFunding": 0.0,
+        #     "StudyStyle": null,
+        #     "SuccessCount": 17,
+        #     "TotalPrincipal": 90858.0,
+        #     "WasteCount": 9
+        # },
         if len(listing_ids) > 10:
             raise ValueError(f"get_listing_info() parame listing_ids length > 10,  {len(listing_ids)}, {listing_ids}")
 
@@ -170,47 +220,27 @@ class PpdOpenClient:
         return req.text
         pass
 
-    # batch get
-    def get_loan_list_ids(self, credit_code_list: str, month_list: int):
-        new_listing_id = None
+    def get_loan_list_items(self):
+        new_listing_items = None
         try:
-            result = self.get_loan_list(time_delta_secs=self.loan_list_time_delta_sec, timeout=0.5, page_index=self.loan_list_page_index)
+            result = self.get_loan_list(time_delta_secs=self.loan_list_time_delta_sec, timeout=0.5,
+                                        page_index=self.loan_list_page_index)
             json_data = json.loads(result)
             if json_data.get("Result", -999) != 1:
                 self.logger.error(f"get_loan_list: {json_data}")
                 self.loan_list_page_index = 1
-                return new_listing_id
+                return new_listing_items
 
             loan_infos = json_data["LoanInfos"]
             loan_infos_len = len(loan_infos)
 
             if loan_infos_len < 180:
-                # if self.loan_list_page_index == 1:
                 if not self.loan_list_time_delta_sec < -60 * 20:
                     self.loan_list_time_delta_sec *= 1.1
-                # self.logger.info(f"{self.loan_list_page_index} {loan_infos_len} {self.loan_list_time_delta_sec} +")
             elif loan_infos_len >= 200:
-                # if self.loan_list_page_index == 2:
                 self.loan_list_time_delta_sec *= 0.9
-                    # self.logger.info(f"{self.loan_list_page_index} {loan_infos_len} {self.loan_list_time_delta_sec} -")
 
-            listing_ids = [item["ListingId"] for item in loan_infos if item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get("RemainFunding", 0) > 50]
-            # loan_infos = [item["ListingId"] for item in loan_infos if item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get("RemainFunding", 0) > 50]
-            # listing_ids = [item["ListingId"] for item in loan_infos]
-            new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
-
-            if new_listing_id:
-                self.logger.info(f"find from O{self.client_index}: {len(new_listing_id)} in {len(listing_ids)}, {loan_infos_len}  {new_listing_id}, page:{self.loan_list_page_index} {self.loan_list_time_delta_sec}")
-                self.listing_id_cache.extendleft(new_listing_id)
-            # else:
-            #     # self.logger.info("No more data")
-            #     return None
-
-            # if self.loan_list_page_index == 1:
-            #     self.loan_list_page_index = 2
-            # else:
-            #     self.loan_list_page_index = 1
-
+            return loan_infos
         except requests.exceptions.Timeout as ex:
             self.request_exceptin_count += 1
             if self.request_exceptin_count == 30:
@@ -222,6 +252,21 @@ class PpdOpenClient:
             self.logger.info(f"get_loan_list_ids RequestException: {ex}")
         except Exception as ex:
             self.logger.info(f"get_loan_list_ids exception: {ex} result: {result}", exc_info=True)
+
+        return new_listing_items
+
+    def get_loan_list_ids(self, credit_code_list: str, month_list: int):
+        loan_infos = self.get_loan_list_items()
+
+        if not loan_infos:
+            return None
+
+        listing_ids = [item["ListingId"] for item in loan_infos if item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get("RemainFunding", 0) > 50]
+        new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
+
+        if new_listing_id:
+            self.logger.info(f"find from O{self.client_index}: {len(new_listing_id)} in {len(listing_ids)}, {len(loan_infos)}  {new_listing_id},{self.loan_list_time_delta_sec}")
+            self.listing_id_cache.extendleft(new_listing_id)
 
         return new_listing_id
 
@@ -249,10 +294,11 @@ class PpdOpenClient:
 def main():
     client = PpdOpenClient()
     client2 = PpdOpenClient(key_index=2)
-    listing_ids = [128299937, 128297957, 128298694, 128299917, 128300078, 128298286, 128299732, 128299672, 128300251, 128297884, 128298334]
+    listing_ids = [129967042, 129967782]
 
     try:
-        # open_detail_infos = client.batch_get_listing_info(listing_ids)
+        open_detail_infos = client.batch_get_listing_info(listing_ids)
+        # print(json.dumps(open_detail_infos, indent=4, ensure_ascii=False))
         #
         # filtered_open_listing_ids = [item["ListingId"] for item in open_detail_infos if item.get("NormalCount", 0) > 20 and (item["NormalCount"] * 1.0 / (
         #             item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) > 0.9]
@@ -266,10 +312,10 @@ def main():
         # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
         # print(client.refresh_token(openid, refresh_token))
 
-        print(client.get_loan_list_ids(["B", "C"], [3, 6]))
+        logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
 
         # logger.info(client.get_loan_list(1))
-        logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
+        # logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
 
         # print(client.get_bid_list(datetime.now() + timedelta(days=-30)))
 

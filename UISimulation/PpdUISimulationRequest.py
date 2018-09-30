@@ -36,7 +36,7 @@ class PpdUISimulationRequest:
             "Referer": "https://invest.ppdai.com/loan/info/",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-US,en;q=0.9",
-            "Cookie": "uniqueid=2b2b3af5-1115-40e0-a5df-eb96f36181e7; __fp=fp; __vid=496486763.1537346573967; __tsid=262473610; __vsr=1537346573967.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; _ppdaiWaterMark=15373465751035; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%22165f0ff1435204-073bf4f2bb391e-333b5402-2304000-165f0ff1436b4%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%2C%22first_id%22%3A%22165f0ff1435204-073bf4f2bb391e-333b5402-2304000-165f0ff1436b4%22%7D; aliyungf_tc=AQAAAMa01xmjMQ8AjlD3PHgGNLZUbaEJ; JSESSIONID=0F59401BE18E2676499EFF68CA9ED547",
+            "Cookie": "sajssdk_2015_cross_new_user=1; uniqueid=8a367b8a-0a7d-44d5-99f2-e03f73d15362; __fp=fp; __vid=1645850350.1538037802694; __tsid=262473610; __vsr=1538037802694.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; _ppdaiWaterMark=15380378038784; token=7fd38432594dfea0e1aa6a7ef7093f572c179a40ebe342fdec8dc65925247fe04d5706da6c0af32a1e; __eui=Cel3wwogQQUMvl7O%2BveuJQ%3D%3D; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; __sid=1538037802694.2.1538037823590; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221661a326502475-0110ff68c516d2-333b5402-2304000-1661a326503798%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%2C%22first_id%22%3A%221661a326502475-0110ff68c516d2-333b5402-2304000-1661a326503798%22%7D; waterMarkTimeCheck1=09%2F27%2F2018+16%3A43%3A44; aliyungf_tc=AQAAAGOw5FmQxgsAjlD3PJGuYPXBmXHv; JSESSIONID=A79FBA20C193E347BC54379567574FE3",
         }
 
     def update_cookies(self, cookies):
@@ -182,8 +182,9 @@ class PpdUISimulationRequest:
             for item in borrower_info["userAuthsList"]:
                 borrower_info[item["name"]] = True
 
-        if "educationInfo" in borrower_info:
-            for edu_name, edu_value in borrower_info["educationInfo"].items():
+        education_info = borrower_info.get("educationInfo")
+        if education_info:
+            for edu_name, edu_value in education_info.items():
                 borrower_info[edu_name] = edu_value
         else:
             borrower_info["EducationDegree"] = "无"
@@ -550,7 +551,7 @@ def main():
     id = 129722056
 
     client = PpdUISimulationRequest()
-    json_data = client.get_detail_info(129723136)
+    json_data = client.get_detail_info(129854214)
     # json_data = client.batch_get_detail_infs([129722481, 129722781])
     # for item in client.batch_get_show_borrower_info([id, 128080987]):
     #     logger.info(json.dumps(client.change_key(item), ensure_ascii=False))

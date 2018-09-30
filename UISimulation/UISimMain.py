@@ -19,6 +19,7 @@ import winsound
 from Open.PpdOpenClient import PpdOpenClient, privatekey_2
 from win10toast import ToastNotifier
 
+
 def refresh_config():
     with open('UISimMain.json') as f:
         data = json.load(f)
@@ -36,6 +37,9 @@ def restore_config():
 
 def filter_item_if_too_many(item):
     if item.get("NormalCount", 0) < 30:
+        return False
+
+    if item["RemainFunding"] == 0:
         return False
 
     if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.9:

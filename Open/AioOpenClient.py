@@ -7,16 +7,17 @@ from datetime import datetime
 
 import json
 from pprint import pprint
-from aiohttp import ClientSession
+from datetime import timedelta
+from aiohttp import ClientSession, ClientTimeout
 from Open.PpdOpenClient import PpdOpenClient
 
 
 class AioOpenClient(PpdOpenClient):
-    def __init__(self, logger=None):
+    def __init__(self, logger=None, key_index=1):
         self.logger = logger or logging.getLogger(__name__)
-        PpdOpenClient.__init__(self, self.logger)
+        PpdOpenClient.__init__(self, self.logger, key_index=key_index)
 
-    async def aio_post(self, url, data, access_token="", timeout=None):
+    async def aio_post(self, url, data, access_token="", timeout_sec=None):
         start_date_time = datetime.utcnow()
         timestamp = start_date_time.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -41,19 +42,39 @@ class AioOpenClient(PpdOpenClient):
         if access_token.strip():
             REQUEST_HEADER["X-PPD-ACCESSTOKEN"] = access_token
 
-        result = await self.post_data(url, data, REQUEST_HEADER)
+        result = await self.post_data(url, data, REQUEST_HEADER, timeout_sec=timeout_sec)
         # req = self.session.post(url, data=json.dumps(data), headers=REQUEST_HEADER, timeout=timeout)
         # return req.text
         return result
         pass
 
-    async def post_data(self, url, data, headers):
+    async def post_data(self, url, data, headers, timeout_sec=0.6):
         post_data = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        async with ClientSession(headers=headers) as session:
+        timeout = ClientTimeout(total=timeout_sec)
+        async with ClientSession(headers=headers, timeout=timeout) as session:
             self.logger.debug(f"{url}, post, {post_data}")
             async with session.post(url, data=post_data) as response:
                 response = await response.read()
                 return response
+
+    async def aio_get_loan_list(self, page_index=1, time_delta_secs=None, timeout_sec=0.6):
+        url = "https://openapi.ppdai.com/listing/openapiNoAuth/loanList"
+        data = {
+            "PageIndex": page_index
+        }
+
+        # start_date_time = datetime.utcnow()
+        if time_delta_secs:
+            start_date_time = datetime.now() + timedelta(seconds=time_delta_secs)
+            data["StartDateTime"] = start_date_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+        self.log_count += 1
+        if self.log_count > 100:
+            print(self.client_index, data, time_delta_secs)
+            self.log_count = 0
+
+        response = await self.aio_post(url, data=data)
+        return response
 
     async def aio_get_listing_info(self, listing_ids: int):
         if len(listing_ids) > 10:
@@ -108,13 +129,13 @@ def main():
     # logger.info(json.dumps(client.batch_get_listing_info(list_ids), ensure_ascii=False))
     # logger.info("end")
 
-    logger.info("start")
-    logger.info(json.dumps(client.aio_batch_get_listing_info(list_ids), ensure_ascii=False))
-    logger.info("end")
+    # logger.info("start")
+    # logger.info(json.dumps(client.aio_batch_get_listing_info(list_ids), ensure_ascii=False))
+    # logger.info("end")
 
-    logger.info("start")
-    logger.info(json.dumps(client.batch_get_listing_info(list_ids), ensure_ascii=False))
-    logger.info("end")
+    # logger.info("start")
+    # logger.info(json.dumps(client.batch_get_listing_info(list_ids), ensure_ascii=False))
+    # logger.info("end")
     pass
 
 

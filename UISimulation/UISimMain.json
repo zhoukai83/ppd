@@ -3,7 +3,7 @@
         "Sleep": 0.01,
         "RandomSleep": 0,
         "RefreshListTime": 1.8,
-        "Session": "d4cedc9127b3a60c5b73996ca2ba66fe",
+        "Session": "7707dd7eeb410fffaac5665006784234",
         "Status": "Pause1",
         "Terminate": "False",
         "comments": "total RefreshListTime can not 1.2 - 1.3 if using ui,  0.12 using openapi"

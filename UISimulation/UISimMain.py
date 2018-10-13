@@ -90,12 +90,13 @@ def main():
     ppd_sim_client = PpdUISimulationRequest()
     ppd_open_client = PpdOpenClient()
     ppd_open_client_2 = PpdOpenClient(key_index=2)
+    ppd_open_client_3 = PpdOpenClient(key_index=3)
     no_more_money = False
     df = None
     toaster = ToastNotifier()
     current_page = 1
     total_page = 1
-    get_list_from = "U"
+    get_list_from = "U1"
 
     last_refresh_list_time = time.time()
     data_file_path = "UISimMain.csv"
@@ -131,11 +132,17 @@ def main():
                         logger.info(f"get list from U: {listing_ids}")
                     get_list_from = "U"
                 else:
-                    if get_list_from == "O2":
+                    if get_list_from == "O1":
                         listing_ids = ppd_open_client.get_loan_list_ids(["B", "C", "D"], [3, 6])
+                        get_list_from = "O2"
+                    elif get_list_from == "O2":
+                        listing_ids = ppd_open_client_2.get_loan_list_ids(["B", "C", "D"], [3, 6])
+                        get_list_from = "O3"
+                    elif get_list_from == "O3":
+                        listing_ids = ppd_open_client_3.get_loan_list_ids(["B", "C", "D"], [3, 6])
                         get_list_from = "O1"
                     else:
-                        listing_ids = ppd_open_client_2.get_loan_list_ids(["B", "C", "D"], [3, 6])
+                        listing_ids = ppd_open_client.get_loan_list_ids(["B", "C", "D"], [3, 6])
                         get_list_from = "O2"
 
                 if not listing_ids:

@@ -23,6 +23,15 @@ MIICWwIBAAKBgQC3b6GQxhVufoR6naWN3kr0q33cocQmKsdtjOamGMJoyaLD+72GW72Sxg0Q76YdwWMi
 -----END RSA PRIVATE KEY-----
 '''
 
+privatekey_3 = '''
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfOK+XUw/CXEmg/xTXRLPVXiin
+bzYMKbd0vnkPetbAN+3mSBdST1d0cDssNdXm68M6fHbhrfVCCigkfnv6s16n7eY/
+AVm2MajuhFCy8nROEPhgZkFDLp8VZGwULDmeXk8EdTy5h3AEx9beDwn9i4jy/69v
+vfuOes4QOaIL+QB/PQIDAQAB
+-----END PUBLIC KEY-----
+'''
+
 # {"AccessToken":"78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c","ExpiresIn":604800,"OpenID":"a27effb5cc9f4d2fad1053642a155fe1","RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 #  {"AccessToken":"748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 class PpdOpenClient:
@@ -44,6 +53,8 @@ class PpdOpenClient:
             private_key = privatekey_1
         elif key_index == 2:
             private_key = privatekey_2
+        elif key_index == 3:
+            private_key = privatekey_3
         else:
             raise ValueError(f"Do not support key index: {key_index}")
         self.rsa_client = RsaClient(private_key)
@@ -292,12 +303,12 @@ class PpdOpenClient:
 
 
 def main():
-    client = PpdOpenClient()
-    client2 = PpdOpenClient(key_index=2)
+    # client = PpdOpenClient()
+    client = PpdOpenClient(key_index=3)
     listing_ids = [129967042, 129967782]
 
     try:
-        open_detail_infos = client.batch_get_listing_info(listing_ids)
+        # open_detail_infos = client.batch_get_listing_info(listing_ids)
         # print(json.dumps(open_detail_infos, indent=4, ensure_ascii=False))
         #
         # filtered_open_listing_ids = [item["ListingId"] for item in open_detail_infos if item.get("NormalCount", 0) > 20 and (item["NormalCount"] * 1.0 / (
@@ -312,9 +323,9 @@ def main():
         # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
         # print(client.refresh_token(openid, refresh_token))
 
-        logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
+        # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
 
-        # logger.info(client.get_loan_list(1))
+        logger.info(client.get_loan_list(1))
         # logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
 
         # print(client.get_bid_list(datetime.now() + timedelta(days=-30)))

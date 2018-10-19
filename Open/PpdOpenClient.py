@@ -32,6 +32,7 @@ vfuOes4QOaIL+QB/PQIDAQAB
 -----END PUBLIC KEY-----
 '''
 
+# {"AccessToken":"2bd98865594dfea0e1aa6a7ef7093f57a64835252b6b8cd57ea09f7bab2c1945493480dc14992f9a922e1f08513ace4e494bc4d68e9b7ef12bac1e63","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 # {"AccessToken":"78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c","ExpiresIn":604800,"OpenID":"a27effb5cc9f4d2fad1053642a155fe1","RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 #  {"AccessToken":"748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 class PpdOpenClient:
@@ -42,9 +43,9 @@ class PpdOpenClient:
 
         # 507d1c7703144dc19ddfd17e8028740b & state =
         self.code = "507d1c7703144dc19ddfd17e8028740b"
-        self.access_token = "748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca"
+        self.access_token = "2bd98865594dfea0e1aa6a7ef7093f57a64835252b6b8cd57ea09f7bab2c1945493480dc14992f9a922e1f08513ace4e494bc4d68e9b7ef12bac1e63"
 
-        self.listing_id_cache = deque(maxlen=100)
+        self.listing_id_cache = deque(maxlen=200)
 
         self.loan_list_time_delta_sec = -60 * 15
         self.client_index = key_index
@@ -272,7 +273,7 @@ class PpdOpenClient:
         if not loan_infos:
             return None
 
-        listing_ids = [item["ListingId"] for item in loan_infos if item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get("RemainFunding", 0) > 50]
+        listing_ids = [item["ListingId"] for item in loan_infos if item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get("RemainFunding", 0) > 50 and not (item["CreditCode"] in ["A", "C"] and item["Months"] == 12)]
         new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
 
         if new_listing_id:
@@ -304,7 +305,7 @@ class PpdOpenClient:
 
 def main():
     # client = PpdOpenClient()
-    client = PpdOpenClient(key_index=3)
+    client = PpdOpenClient(key_index=1)
     listing_ids = [129967042, 129967782]
 
     try:
@@ -325,10 +326,10 @@ def main():
 
         # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
 
-        logger.info(client.get_loan_list(1))
-        # logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
+        # logger.info(client.get_query_balance())
+        logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
 
-        # print(client.get_bid_list(datetime.now() + timedelta(days=-30)))
+        # logger.info(client.get_bid_list(datetime.now() + timedelta(days=-30)))
 
     except Exception as ex:
         print(ex)

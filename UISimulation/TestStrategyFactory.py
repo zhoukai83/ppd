@@ -91,7 +91,7 @@ def test_last_item():
 def test_ui():
     sf = UIStrategyFactory()
     df = pd.read_csv(file_path, encoding="utf-8")
-    df = df[df["期限"] != 12]
+    # df = df[df["期限"] != 12]
     # print(sf.report(df.to_dict('records'), -100))
     sf.report_all(df)
 
@@ -183,5 +183,19 @@ if __name__ == "__main__":
     pd.set_option('display.width', 1000)
 
     start = time.time()
+    df = pd.read_csv(file_path, encoding="utf-8")
+
+    column_name_create_date = "creationDate"
+    series_creation_date = pd.to_datetime(df[column_name_create_date])
+
+    today = pd.to_datetime('today').strftime("%m/%d/%Y")
+    next_day = pd.Timestamp(today) + pd.DateOffset(1)
+    df = df[(series_creation_date > pd.Timestamp(today)) & (series_creation_date < next_day)]
+
+    print("A", df[df["级别"] == "A"]["期限"].value_counts())
+    print("B", df[df["级别"] == "B"]["期限"].value_counts())
+    print("C", df[df["级别"] == "C"]["期限"].value_counts())
+    print("D", df[df["级别"] == "D"]["期限"].value_counts())
+
     main()
     print(f"End: {time.time() - start}")

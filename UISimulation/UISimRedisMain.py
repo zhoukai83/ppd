@@ -37,21 +37,21 @@ def restore_config():
 
 
 def filter_item_if_too_many(item):
-    if item.get("NormalCount", 0) < 15:
+    if item.get("NormalCount", 0) < 30:
         return False
 
     if item["RemainFunding"] == 0:
         return False
 
-    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.7:
+    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.9:
         return False
 
     # "HighestDebt": "历史最高负债",  "OwingAmount": "待还金额",  "Amount": "借款金额",
-    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1.2:
+    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1:
         return False
 
     # "HighestPrincipal": "单笔最高借款金额",
-    if item["Amount"] / item["HighestPrincipal"] > 1.2:
+    if item["Amount"] / item["HighestPrincipal"] > 1:
         return False
 
     return True
@@ -90,8 +90,6 @@ def main():
     strategy_factory = UIStrategyFactory()
     ppd_sim_client = PpdUISimulationRequest()
     ppd_open_client = PpdOpenClient()
-    ppd_open_client_2 = PpdOpenClient(key_index=2)
-    ppd_open_client_3 = PpdOpenClient(key_index=3)
     no_more_money = False
     df = None
     toaster = ToastNotifier()
@@ -137,7 +135,7 @@ def main():
                     if listing_ids:
                         logger.info(f"get list from U: {listing_ids}")
                     get_list_from = "U"
-                elif get_list_from == "O3":
+                else:
                     redis_loan_listings_str = redis_client.get('loan_listing_ids')
                     if redis_loan_listings_str is not None and redis_loan_listings_str != b"None":
                         redis_loan_listings = json.loads(redis_loan_listings_str)
@@ -145,19 +143,6 @@ def main():
                         listing_ids = redis_loan_listings
                         redis_client.delete("loan_listing_ids")
                         get_list_from = "Redis"
-                else:
-                    if get_list_from == "Redis":
-                        listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
-                        get_list_from = "O1"
-                    elif get_list_from == "O1":
-                        listing_ids = ppd_open_client_2.get_loan_list_ids(expected_ratings, expected_months)
-                        get_list_from = "O2"
-                    elif get_list_from == "O2":
-                        listing_ids = ppd_open_client_3.get_loan_list_ids(expected_ratings, expected_months)
-                        get_list_from = "O3"
-                    else:
-                        listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
-                        get_list_from = "O1"
 
                 if not listing_ids:
                     continue
@@ -189,11 +174,11 @@ def main():
                         if not can_bid:
                             continue
 
-                        # open_bid_result = ppd_open_client.bid(item['listingId'])
-                        # logger.log(21, f"bid open:{open_bid_result}")
-
                         if not ppd_sim_client.check_bid_number(item):
                             continue
+
+                        # open_bid_result = ppd_open_client.bid(item['listingId'])
+                        # logger.log(21, f"{open_bid_result}")
 
                         item["strategy"] = first_strategy.name
                         if ppd_sim_client.bid_by_request(item):

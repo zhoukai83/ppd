@@ -5,6 +5,13 @@ name = "pypi"
 
 [packages]
 selenium = "*"
+pandas = "*"
+"bs4" = "*"
+aiohttp = "*"
+requests = "*"
+rsa = "*"
+"win10toast" = "*"
+lxml = "*"
 
 [dev-packages]
 

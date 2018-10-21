@@ -24,7 +24,7 @@ class FetchFromChrome():
         if session_id:
             self.driver.session_id = session_id
 
-        self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=3,4,5&pageIndex=1&times=3&period=1,2"
+        self.refresh_url = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=&pageIndex=1&times=3,2&period=1,2"
 
     def __enter__(self):
         return self

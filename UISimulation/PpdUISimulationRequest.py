@@ -6,6 +6,7 @@ import requests
 import os
 from itertools import groupby
 from Common import Utils
+import urllib
 
 
 class PpdNeedSleepException(Exception):
@@ -257,7 +258,11 @@ class PpdUISimulationRequest:
                 self.logger.warning(json.dumps(json_data, ensure_ascii=False))
             elif "debtAmountMax" in json_data[2]:
                 item = self.change_key({**json_data[0], **json_data[1], **json_data[2]})
-                self.logger.info(json.dumps(item, indent=4,  ensure_ascii=False))
+
+                if item["正常还清次数"] >= 30:
+                    self.logger.info(json.dumps(item, indent=4,  ensure_ascii=False))
+                else:
+                    self.logger.info(f"{item['listingId']}: {item['级别']} {item['期限']} normal account {item['正常还清次数']}")
             # else:
             #     self.logger.info(f"get_detail_info data loose {json.dumps(json_data, indent=4,  ensure_ascii=False)}")
         except PpdNeedSleepException:
@@ -299,7 +304,11 @@ class PpdUISimulationRequest:
                     if "debtAmountMax" in group[2]:
                         item = self.change_key({**group[0], **group[1], **group[2]})
                         item_list.append(item)
-                        self.logger.info(json.dumps(item, indent=4, ensure_ascii=False))
+
+                        if item["正常还清次数"] >= 30:
+                            self.logger.info(json.dumps(item, indent=4, ensure_ascii=False))
+                        else:
+                            self.logger.info(f"{item['listingId']}: {item['级别']} {item['期限']} normal account {item['正常还清次数']}")
         except PpdNeedSleepException:
             raise
         except PpdResultContentNullException:
@@ -373,6 +382,8 @@ class PpdUISimulationRequest:
             bid_month_type = 1
         elif month == 6:
             bid_month_type = 2
+        elif month == 12:
+            bid_month_type = 4
         else:
             raise ValueError(f"Unknown month type for bid sim: {month}")
 
@@ -381,6 +392,8 @@ class PpdUISimulationRequest:
             data["creditCodes"] = "3"
         elif credit_codes == "C":
             data["creditCodes"] = "4"
+        elif credit_codes == "A":
+            data["creditCodes"] = "2"
         else:
             raise ValueError(f"Unsupported creditCodes for bid sim: {month}")
 
@@ -416,6 +429,8 @@ class PpdUISimulationRequest:
 
             self.logger.info(f"check bid number: {item['listingId']}, {loan_amount}, {len(not_full_list)},{len(data_list)}")
             return True
+        except PpdNeedSleepException:
+            raise PpdNeedSleepException
         except Exception as ex:
             self.logger.error(f"check_bid_number {ex} {result}", exc_info=True)
 
@@ -482,6 +497,8 @@ class PpdUISimulationRequest:
             bid_month_type = 1
         elif month == 6:
             bid_month_type = 2
+        elif month == 12:
+            bid_month_type = 4
         else:
             raise ValueError(f"Unknown month type for bid sim: {month}")
 
@@ -490,6 +507,8 @@ class PpdUISimulationRequest:
             data["creditCodes"] = "3"
         elif credit_codes == "C":
             data["creditCodes"] = "4"
+        elif credit_codes == "A":
+            data["creditCodes"] = "2"
         else:
             raise ValueError(f"Unsupported creditCodes for bid sim: {month}")
 
@@ -539,6 +558,41 @@ class PpdUISimulationRequest:
         return True
         pass
 
+    def __pre_apply(self, data):
+        url = "https://invdebt.ppdai.com/Negotiable/preApply"
+        headers = self.headers
+        headers["Host"] = "invdebt.ppdai.com"
+        headers["Origin"] = "https://invdebt.ppdai.com"
+        headers[
+            "Referer"] = "https://invdebt.ppdai.com/negotiable/apply?owingNumber=&Sort=&level=%2C&dueDay=&minPrincipal=&maxPrincipal=&Rate="
+        headers["Cookie"] = "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; __utma=1.1098278737.1530780657.1537521814.1537844264.44; __utmz=1.1537844264.44.44.utmcsr=tz.ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/investment-record/black-list; registerurl=https%3A%2F%2Fpay.ppdai.com%2Fdeposit%2Fprocessing%3Ftradeid%3D180925064000088903; registersourceurl=https%3A%2F%2Fppdai.cloud.cmbchina.com%2Frecharge%3Fsecret%3Duk1g%252biiu7tt00un1wddj1pecynqmvolok10tfxjv%252bsr0bvxfper%252bgrn3td7d3k3laz9tsjtuutva%252fyngsrscmze6c6m6nqtj5ufk5lx2pojvdwpfonod1zgditv5ehljjyxbvxjhuufqaz50o6zlv3oody57k7sojgmtmr5fjkhmafq5u6vbcqxhgzbr9hq2locwkazfzrbptptqvv02fecslnjehnpautnegau%252bcvqg0npcadupre54jeyolwqzf7ncz83ewwxb%252fsm%252bgv4fhv51vr%252b6qvx%252b7upuv6zfqghshyd6fnubj1yesytrx6xrezdkub2odexsc9qiz2rdqd0qi%252bqcforpgy6%252btyy3%252f%252bt%252balnrhz8fiv8chwx8ld0a10xogvudq4h%252filshktwz0t%252fnbise7i5dgsmvxis9orl4s0v%252bwkklmaq1i0s9se01mw9h5jg58hvxy%252bpbycej3hp7chqdfhwg%252bncxfn%252bbafcu5ehvgx%252fn4%252fizbee2x1jdahtshkqtelmrwoazzba8luzsvi0hty2nxklynjswqsg4vibvmx4urzim9t%252f%252begr%252fs9c5yizcdq%252f3m2wkncyw5iqk2vs3%252bqf%252bxsxei37oeyu7u0ayjxxr7ikeezguoofllynhsbwz%252bzkpqzhtfuo%252fmz%252byah3p5ix6f8xa1zmnlte%253d; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1537154152,1537521815,1537521846,1537844293; regSourceId=0; referID=0; fromUrl=https%3A%2F%2Fwww.ppdai.com%2Fmoneyhistory; referDate=2018-10-8%2010%3A44%3A40; noticeflag=true; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; __vsr=1539655504772.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1539666456849.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV2%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1539669411885.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1539673759471.refSite%3Dhttps%3A//www.ppdai.com/moneyhistory%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1539743507367.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1537339527,1539574208,1539743508; token=7cddd068594dfea0e1aa6a7ef7093f57ee79fa9d6e9794d11b3fccbc93ade9d562e9cc5d2585d06db2; __eui=Cel3wwogQQUMvl7O%2BveuJQ%3D%3D; __tsid=262473610; aliyungf_tc=AQAAAG4qv2/EfwMAjlD3PL+lxOxQtKu6; gr_session_id_b9598a05ad0393b9=87c7c5fc-b6d9-4d78-b3f9-972523611b95; gr_session_id_b9598a05ad0393b9_87c7c5fc-b6d9-4d78-b3f9-972523611b95=true; currentUrl=https%3A%2F%2Finvdebt.ppdai.com%2Fnegotiable%2Fapply%3Fowingnumber%3D%26sort%3D%26level%3D%252c%26dueday%3D%26minprincipal%3D%26maxprincipal%3D%26rate%3D; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1539849287; __sid=1539846609728.16.1539849286928; waterMarkTimeCheck1=10%2F18%2F2018+15%3A54%3A48"
+        headers["X-Requested-With"] = "XMLHttpRequest"
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+        headers["Connection"] = "keep-alive"
+
+        session = requests.Session()
+        req = session.post(url, data=data, headers=headers)
+        result = req.text
+        return result
+
+    def pre_apply(self, listing_id):
+        data = [{"listingId": listing_id, "preDebtdealId": 0, "saleRate": 0}]
+        post_data = json.dumps(data, ensure_ascii=True)
+        data = "jsondata=" + post_data
+        return self.__pre_apply(data)
+
+
+    def pre_apply_list(self, listing_ids):
+        data = []
+        for listing_id in listing_ids:
+            data_item = {"listingId": listing_id, "preDebtdealId": 0, "saleRate": 0}
+            data.append(data_item)
+
+        post_data = json.dumps(data, ensure_ascii=True)
+        data = "jsondata=" + post_data
+        return self.__pre_apply(data)
+        pass
+
     async def aio_bid(self, item):
 
         pass
@@ -550,12 +604,13 @@ def main():
     # logger.info("start send")
     id = 129722056
 
-    client = PpdUISimulationRequest()
-    json_data = client.get_detail_info(129854214)
+    cookies = "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; __utma=1.1098278737.1530780657.1537521814.1537844264.44; __utmz=1.1537844264.44.44.utmcsr=tz.ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/investment-record/black-list; registerurl=https%3A%2F%2Fpay.ppdai.com%2Fdeposit%2Fprocessing%3Ftradeid%3D180925064000088903; registersourceurl=https%3A%2F%2Fppdai.cloud.cmbchina.com%2Frecharge%3Fsecret%3Duk1g%252biiu7tt00un1wddj1pecynqmvolok10tfxjv%252bsr0bvxfper%252bgrn3td7d3k3laz9tsjtuutva%252fyngsrscmze6c6m6nqtj5ufk5lx2pojvdwpfonod1zgditv5ehljjyxbvxjhuufqaz50o6zlv3oody57k7sojgmtmr5fjkhmafq5u6vbcqxhgzbr9hq2locwkazfzrbptptqvv02fecslnjehnpautnegau%252bcvqg0npcadupre54jeyolwqzf7ncz83ewwxb%252fsm%252bgv4fhv51vr%252b6qvx%252b7upuv6zfqghshyd6fnubj1yesytrx6xrezdkub2odexsc9qiz2rdqd0qi%252bqcforpgy6%252btyy3%252f%252bt%252balnrhz8fiv8chwx8ld0a10xogvudq4h%252filshktwz0t%252fnbise7i5dgsmvxis9orl4s0v%252bwkklmaq1i0s9se01mw9h5jg58hvxy%252bpbycej3hp7chqdfhwg%252bncxfn%252bbafcu5ehvgx%252fn4%252fizbee2x1jdahtshkqtelmrwoazzba8luzsvi0hty2nxklynjswqsg4vibvmx4urzim9t%252f%252begr%252fs9c5yizcdq%252f3m2wkncyw5iqk2vs3%252bqf%252bxsxei37oeyu7u0ayjxxr7ikeezguoofllynhsbwz%252bzkpqzhtfuo%252fmz%252byah3p5ix6f8xa1zmnlte%253d; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1537154152,1537521815,1537521846,1537844293; regSourceId=0; referID=0; fromUrl=https%3A%2F%2Fwww.ppdai.com%2Fmoneyhistory; referDate=2018-10-8%2010%3A44%3A40; noticeflag=true; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; __vsr=1539655504772.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1539666456849.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV2%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1539669411885.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1539673759471.refSite%3Dhttps%3A//www.ppdai.com/moneyhistory%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1539743507367.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1537339527,1539574208,1539743508; token=7cddd068594dfea0e1aa6a7ef7093f57ee79fa9d6e9794d11b3fccbc93ade9d562e9cc5d2585d06db2; __eui=Cel3wwogQQUMvl7O%2BveuJQ%3D%3D; __tsid=262473610; aliyungf_tc=AQAAAG4qv2/EfwMAjlD3PL+lxOxQtKu6; gr_session_id_b9598a05ad0393b9=dddda42b-d10f-42ca-8ef9-57e90d7074d3; gr_session_id_b9598a05ad0393b9_dddda42b-d10f-42ca-8ef9-57e90d7074d3=true; gr_cs1_dddda42b-d10f-42ca-8ef9-57e90d7074d3=user_name%3Afell_2015; currentUrl=https%3A%2F%2Finvdebt.ppdai.com%2Fnegotiable%2Fapply%3Fowingnumber%3D%26sort%3D7%26level%3D%2Cb%2C%26dueday%3D%26minprincipal%3D%26maxprincipal%3D%26rate%3D%26pageindex%3D3; __sid=1539915059846.16.1539915469344; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1539915469; waterMarkTimeCheck1=10%2F19%2F2018+10%3A17%3A50"
+    client = PpdUISimulationRequest(cookies=cookies)
+    # json_data = client.get_detail_info(129854214)
     # json_data = client.batch_get_detail_infs([129722481, 129722781])
     # for item in client.batch_get_show_borrower_info([id, 128080987]):
     #     logger.info(json.dumps(client.change_key(item), ensure_ascii=False))
-    logger.info(json.dumps(json_data, ensure_ascii=False))
+    # logger.info(json.dumps(json_data, ensure_ascii=False))
     # task = asyncio.ensure_future(client.get_show_listing_base_info(id))
     # tasks.append(task)
     #
@@ -573,6 +628,8 @@ def main():
     # print(json.dumps(result, ensure_ascii=False))
     # print(result)
 
+
+    print(client.pre_apply(125553368))
 
 if __name__ == '__main__':
     logging_format = '"%(asctime)s %(levelname)s %(module)s %(lineno)d \t%(message)s'

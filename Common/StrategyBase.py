@@ -49,74 +49,78 @@ class StrategyBase:
     def is_item_can_bid(self, item, show_full_log=False, show_failed_reason=False):
         item = self.handle_item(item)
         can_bid = True
-        for filter_item in self.filters:
-            # if not show_full_log and not can_bid:
-            #     return False
 
-            filter_item_key = filter_item.key
-            filter_item_compare = filter_item.compare
-            filter_item_value_type = filter_item.type
-            filter_item_value = filter_item.value
+        try:
+            for filter_item in self.filters:
+                # if not show_full_log and not can_bid:
+                #     return False
 
-            filter_item_result = False
-            if filter_item_key not in item and filter_item_value_type != "rate":
-                self.logger.info(filter_item_key + "not exist")
-                can_bid = False
-                continue
+                filter_item_key = filter_item.key
+                filter_item_compare = filter_item.compare
+                filter_item_value_type = filter_item.type
+                filter_item_value = filter_item.value
 
-            should_convert_to_number = filter_item_compare == ">" or filter_item_compare == "<"
-            if filter_item_value_type == "int":
-                actual_value_str = item[filter_item_key]
-                if filter_item_key == "网络借贷平台借款余额" and actual_value_str == "暂未提供":
-                    actual_value_str = "0"
-
-                actual_value = Utils.convert_to_int(actual_value_str)
-                expected_value = Utils.convert_to_int(filter_item_value)
-            elif filter_item_value_type == "rate":
-                key_pair = filter_item_key.split("/")
-                denominator = Utils.convert_to_float(item[key_pair[1]])
-                if denominator == 0:
-                    actual_value = 0
-                else:
-                    actual_value = round(Utils.convert_to_float(item[key_pair[0]]) / denominator, 3)
-                expected_value = Utils.convert_to_float(filter_item_value)
-            elif should_convert_to_number:
-                actual_value = Utils.convert_to_float(item[filter_item_key])
-                expected_value = Utils.convert_to_float(filter_item_value)
-            else:
-                actual_value = item[filter_item_key]
-                expected_value = filter_item_value
-
-            if filter_item_compare == "!=":
-                filter_item_result = expected_value != actual_value
-            elif filter_item_compare == "==":
-                filter_item_result = expected_value == actual_value
-            elif filter_item_compare == ">":
-                filter_item_result = actual_value > expected_value
-            elif filter_item_compare == "<":
-                filter_item_result = actual_value < expected_value
-            elif filter_item_compare == "in":
-                if expected_value == "School211":
-                    school211_list = Utils.get_211_school()
-                    filter_item_result = actual_value in school211_list
-                else:
-                    self.logger.error("not support")
-                    filter_item_result = False
-            else:
-                self.logger.error(f"not support {filter_item_compare}")
                 filter_item_result = False
+                if filter_item_key not in item and filter_item_value_type != "rate":
+                    self.logger.info(filter_item_key + "not exist")
+                    can_bid = False
+                    continue
 
-            if show_full_log:
-                self.logger.debug(f"{str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+                should_convert_to_number = filter_item_compare == ">" or filter_item_compare == "<"
+                if filter_item_value_type == "int":
+                    actual_value_str = item[filter_item_key]
+                    if filter_item_key == "网络借贷平台借款余额" and actual_value_str == "暂未提供":
+                        actual_value_str = "0"
 
-            if show_failed_reason and not filter_item_result:
-                listing_id = item.get("listingId", "Unknown")
-                self.logger.info(
-                    f"{listing_id} {self.name} {str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+                    actual_value = Utils.convert_to_int(actual_value_str)
+                    expected_value = Utils.convert_to_int(filter_item_value)
+                elif filter_item_value_type == "rate":
+                    key_pair = filter_item_key.split("/")
+                    denominator = Utils.convert_to_float(item[key_pair[1]])
+                    if denominator == 0:
+                        actual_value = 0
+                    else:
+                        actual_value = round(Utils.convert_to_float(item[key_pair[0]]) / denominator, 3)
+                    expected_value = Utils.convert_to_float(filter_item_value)
+                elif should_convert_to_number:
+                    actual_value = Utils.convert_to_float(item[filter_item_key])
+                    expected_value = Utils.convert_to_float(filter_item_value)
+                else:
+                    actual_value = item[filter_item_key]
+                    expected_value = filter_item_value
 
-            if not filter_item_result:
-                can_bid = False
-                return False
+                if filter_item_compare == "!=":
+                    filter_item_result = expected_value != actual_value
+                elif filter_item_compare == "==":
+                    filter_item_result = expected_value == actual_value
+                elif filter_item_compare == ">":
+                    filter_item_result = actual_value > expected_value
+                elif filter_item_compare == "<":
+                    filter_item_result = actual_value < expected_value
+                elif filter_item_compare == "in":
+                    if expected_value == "School211":
+                        school211_list = Utils.get_211_school()
+                        filter_item_result = actual_value in school211_list
+                    else:
+                        self.logger.error("not support")
+                        filter_item_result = False
+                else:
+                    self.logger.error(f"not support {filter_item_compare}")
+                    filter_item_result = False
+
+                if show_full_log:
+                    self.logger.debug(f"{str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+
+                if show_failed_reason and not filter_item_result:
+                    listing_id = item.get("listingId", "Unknown")
+                    self.logger.info(
+                        f"{listing_id} {self.name} {str(filter_item_result): <5} {actual_value: <7} {expected_value: <7} {filter_item}")
+
+                if not filter_item_result:
+                    can_bid = False
+                    return False
+        except Exception as ex:
+            self.logger.info(f"{item}", exc_info=True)
 
         return can_bid
 

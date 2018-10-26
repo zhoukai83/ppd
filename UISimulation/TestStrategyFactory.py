@@ -190,6 +190,7 @@ if __name__ == "__main__":
 
     today = pd.to_datetime('today').strftime("%m/%d/%Y")
     next_day = pd.Timestamp(today) + pd.DateOffset(1)
+    print(today, next_day)
     df = df[(series_creation_date > pd.Timestamp(today)) & (series_creation_date < next_day)]
 
     print("A", df[df["级别"] == "A"]["期限"].value_counts())

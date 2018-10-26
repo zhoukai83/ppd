@@ -484,7 +484,7 @@ class PpdUISimulationRequest:
             "successLoanNum": "3",
             "totalCount": 1,
             "userId": 87288708,
-            "sigleBidAmount": 50,
+            "sigleBidAmount": 52,
             "bidCount": 1,
             "useCoupon": True
         }
@@ -554,7 +554,7 @@ class PpdUISimulationRequest:
             self.logger.info(f"bid by request result {listing_id}: {req.text}")
             return False
 
-        # self.logger.info(f"bid by request result {listing_id}: {req.text}")
+        self.logger.info(f"bid by request result {listing_id}: {req.text}")
         return True
         pass
 

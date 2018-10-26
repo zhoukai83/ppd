@@ -32,6 +32,16 @@ vfuOes4QOaIL+QB/PQIDAQAB
 -----END PUBLIC KEY-----
 '''
 
+privatekey_4 = '''
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfyx0dAG2LcoItKtj5lvIES9Uu
+7jrRZsIGNJlR63EbWnVEGLnW1p2s+rVcfp6Ei7qMysHBLUgTArdDr3/oPbX59Ga3
+N1YHF03hc/XvSZv+Za3F0DouS7zUHjHmsHKKxTQ5uaChyKHAMG1beFHKPACO2cnw
+Hv2vAVJLCKeyVGEzxQIDAQAB
+-----END PUBLIC KEY-----
+'''
+
+
 # {"AccessToken":"2bd98865594dfea0e1aa6a7ef7093f57a64835252b6b8cd57ea09f7bab2c1945493480dc14992f9a922e1f08513ace4e494bc4d68e9b7ef12bac1e63","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 # {"AccessToken":"78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c","ExpiresIn":604800,"OpenID":"a27effb5cc9f4d2fad1053642a155fe1","RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 #  {"AccessToken":"748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
@@ -43,7 +53,7 @@ class PpdOpenClient:
 
         # 507d1c7703144dc19ddfd17e8028740b & state =
         self.code = "507d1c7703144dc19ddfd17e8028740b"
-        self.access_token = "2bd98865594dfea0e1aa6a7ef7093f57a64835252b6b8cd57ea09f7bab2c1945493480dc14992f9a922e1f08513ace4e494bc4d68e9b7ef12bac1e63"
+        self.access_token = "288f8069594dfea0e1aa6a7ef7093f57b4d0603e6c172c0f74bcc6b366ed8e693a328d8800245d2b29c0df44626f2310d27250efb9e04c5041b59ccf"
 
         self.listing_id_cache = deque(maxlen=200)
 
@@ -56,6 +66,8 @@ class PpdOpenClient:
             private_key = privatekey_2
         elif key_index == 3:
             private_key = privatekey_3
+        elif key_index == 4:
+            private_key = privatekey_4
         else:
             raise ValueError(f"Do not support key index: {key_index}")
         self.rsa_client = RsaClient(private_key)
@@ -181,11 +193,11 @@ class PpdOpenClient:
         }
         return self.post(url, data=data, access_token=self.access_token)
 
-    def bid(self, listing_id):
+    def bid(self, listing_id, bid_number=51):
         url = "https://openapi.ppdai.com/listing/openapi/bid"
         data = {
             "ListingId": listing_id,
-            "Amount": 50,
+            "Amount": bid_number,
             "UseCoupon": "true"
         }
         return self.post(url, data, access_token=self.access_token)
@@ -282,6 +294,24 @@ class PpdOpenClient:
 
         return new_listing_id
 
+    def get_loan_list_v2(self, credit_code_list, month_list):
+        loan_infos = self.get_loan_list_items()
+
+        if not loan_infos:
+            return None
+
+        listings = [item for item in loan_infos if
+                       item["Months"] in month_list and item["CreditCode"] in credit_code_list and item.get(
+                           "RemainFunding", 0) > 50 and not (item["CreditCode"] in ["A", "C"] and item["Months"] == 12) and item["ListingId"] not in self.listing_id_cache]
+        # new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
+        new_listing_id = [item["ListingId"] for item in listings]
+        if new_listing_id:
+            self.logger.info(
+                f"find from O{self.client_index}: {len(listings)}, {new_listing_id},{self.loan_list_time_delta_sec}")
+            self.listing_id_cache.extendleft(new_listing_id)
+
+        return listings
+
     def batch_get_listing_info(self, listing_ids):
         listing_infos = []
         for index in range(0, len(listing_ids), 10):
@@ -305,7 +335,7 @@ class PpdOpenClient:
 
 def main():
     # client = PpdOpenClient()
-    client = PpdOpenClient(key_index=1)
+    client = PpdOpenClient(key_index=4)
     listing_ids = [129967042, 129967782]
 
     try:

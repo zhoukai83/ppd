@@ -97,6 +97,19 @@ class AioOpenClient(PpdOpenClient):
         return listing_infos
         pass
 
+    async def aio_bid(self, listing_id, bid_number=50):
+        url = "https://openapi.ppdai.com/listing/openapi/bid"
+        data = {
+            "ListingId": listing_id,
+            "Amount": bid_number,
+            "UseCoupon": "true"
+        }
+
+        # self.logger.info(f"{self.access_token}")
+        response = await self.aio_post(url, data=data, access_token=self.access_token)
+        return response.decode("utf-8")
+        # return self.post(url, data, access_token=self.access_token)
+
     def aio_batch_get_listing_info(self, listing_ids):
         listing_infos = []
         loop = asyncio.get_event_loop()

@@ -2,7 +2,7 @@
     "MR-EKAIZHO-01": {
         "Sleep": 0.01,
         "RandomSleep": 0,
-        "RefreshListTime": 2,
+        "RefreshListTime": 2.3,
         "Session": "7ce6871135ba5947bc389d83ae84bbcd",
         "Status": "Pause1",
         "Terminate": "False",

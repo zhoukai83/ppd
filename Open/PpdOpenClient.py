@@ -335,7 +335,7 @@ class PpdOpenClient:
 
 def main():
     # client = PpdOpenClient()
-    client = PpdOpenClient(key_index=4)
+    client = PpdOpenClient(key_index=1)
     listing_ids = [129967042, 129967782]
 
     try:
@@ -356,7 +356,13 @@ def main():
 
         # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
 
-        # logger.info(client.get_query_balance())
+        # balance_result = client.get_query_balance()
+        # balance_result = json.loads(balance_result, encoding="utf-8")
+        # print(balance_result.get("Balance")[0])
+        # if balance_result.get("Balance") and balance_result.get("Balance")[0].get("Balance") < 200:
+        #     print("不足")
+        # logger.info(balance_result)
+
         logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
 
         # logger.info(client.get_bid_list(datetime.now() + timedelta(days=-30)))

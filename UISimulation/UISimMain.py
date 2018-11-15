@@ -12,6 +12,7 @@ from UISimulation.PpdUISimulationRequest import PpdUISimulationRequest, PpdNeedS
 from PpdCommon.PpdItem import PpdItemConvertor
 import pandas as pd
 import time
+import datetime
 import os
 import random
 import itertools
@@ -20,15 +21,14 @@ from Open.PpdOpenClient import PpdOpenClient, privatekey_2
 from Open.AioOpenClient import AioOpenClient
 from win10toast import ToastNotifier
 import asyncio
-
 import redis
+from UISimulation import TokenHelper
 
 def refresh_config():
     with open('UISimMain.json') as f:
         data = json.load(f)
         config = data[platform.node()]
         return config
-
 
 def restore_config():
     with open('UISimMain.json', "r+") as f:
@@ -102,7 +102,7 @@ def main():
     total_page = 1
     get_list_from = "U1"
     expected_ratings = ["A", "B", "C", "D"]
-    expected_months = [3, 6, 12]
+    expected_months = [3, 6]
 
     redis_client = redis.StrictRedis(host='10.164.120.164', port=6379, db=0)
     redis_client.delete("loan_listing_ids")
@@ -117,6 +117,9 @@ def main():
 
     config = refresh_config()
 
+    token_update_time, token_config = TokenHelper.get_token_from_config()
+    ppd_open_client.set_access_token(token_config["AccessToken"])
+
     with FetchFromChrome(config["Session"]) as fetch_from_chrome:
         cookies = fetch_from_chrome.get_cookie_string()
         ppd_sim_client.update_cookies(cookies)
@@ -124,6 +127,10 @@ def main():
         while config["Terminate"] == "False":
             tasks = []
             try:
+                if datetime.datetime.now() - token_update_time > datetime.timedelta(days=6, hours=23, minutes=30):
+                    token_update_time, token_config = TokenHelper.refresh_open_client_token(ppd_open_client, token_config, logger)
+                    ppd_open_client.set_access_token(token_config["AccessToken"])
+
                 sleep_time = config["Sleep"] + random.randint(0, config["RandomSleep"])
                 if no_more_money:
                     sleep_time = sleep_time + 3
@@ -146,7 +153,7 @@ def main():
                     if redis_loan_listings_str is not None and redis_loan_listings_str != b"None":
                         redis_loan_listings = json.loads(redis_loan_listings_str)
                         # logger.info(f"fetch redis: {redis_loan_listings}")
-                        listing_ids = redis_loan_listings
+                        listing_ids = redis_loan_listings[:20]
                         redis_client.delete("loan_listing_ids")
                         get_list_from = "Redis"
                 else:
@@ -199,12 +206,12 @@ def main():
                         task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId']))
                         tasks.append(task)
 
-                        if not ppd_sim_client.check_bid_number(item):
-                            continue
-
-                        item["strategy"] = first_strategy.name
-                        if ppd_sim_client.bid_by_request(item):
-                            logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
+                        # if not ppd_sim_client.check_bid_number(item):
+                        #     continue
+                        #
+                        # item["strategy"] = first_strategy.name
+                        # if ppd_sim_client.bid_by_request(item):
+                        logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
 
                 if tasks:
                     aio_bid_result = loop.run_until_complete(asyncio.gather(*tasks))

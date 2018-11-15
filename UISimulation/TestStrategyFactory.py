@@ -91,6 +91,8 @@ def test_last_item():
 def test_ui():
     sf = UIStrategyFactory()
     df = pd.read_csv(file_path, encoding="utf-8")
+    # df["网络借贷平台借款余额"] = 0
+    # df["creationDate"] = "2018-10-28 16:26:23"
     # df = df[df["期限"] != 12]
     # print(sf.report(df.to_dict('records'), -100))
     sf.report_all(df)
@@ -186,6 +188,7 @@ if __name__ == "__main__":
     df = pd.read_csv(file_path, encoding="utf-8")
 
     column_name_create_date = "creationDate"
+    # df["creationDate"] = "2018-10-28"
     series_creation_date = pd.to_datetime(df[column_name_create_date])
 
     today = pd.to_datetime('today').strftime("%m/%d/%Y")

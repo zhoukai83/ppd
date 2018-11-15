@@ -17,7 +17,9 @@ import random
 import itertools
 import winsound
 from Open.PpdOpenClient import PpdOpenClient, privatekey_2
+from Open.AioOpenClient import AioOpenClient
 from win10toast import ToastNotifier
+import asyncio
 
 import redis
 
@@ -37,21 +39,21 @@ def restore_config():
 
 
 def filter_item_if_too_many(item):
-    if item.get("NormalCount", 0) < 30:
+    if item.get("NormalCount", 0) < 20:
         return False
 
     if item["RemainFunding"] == 0:
         return False
 
-    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.9:
+    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.8:
         return False
 
     # "HighestDebt": "历史最高负债",  "OwingAmount": "待还金额",  "Amount": "借款金额",
-    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1:
+    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1.1:
         return False
 
     # "HighestPrincipal": "单笔最高借款金额",
-    if item["Amount"] / item["HighestPrincipal"] > 1:
+    if item["Amount"] / item["HighestPrincipal"] > 1.1:
         return False
 
     return True
@@ -87,9 +89,12 @@ def get_listing_infos_combine_open_ui(ppd_open_client: PpdOpenClient, ppd_sim_cl
 
 
 def main():
+    loop = asyncio.get_event_loop()
     strategy_factory = UIStrategyFactory()
     ppd_sim_client = PpdUISimulationRequest()
-    ppd_open_client = PpdOpenClient()
+    ppd_open_client = AioOpenClient()
+    ppd_open_client_2 = PpdOpenClient(key_index=2)
+    ppd_open_client_3 = PpdOpenClient(key_index=3)
     no_more_money = False
     df = None
     toaster = ToastNotifier()
@@ -117,6 +122,7 @@ def main():
         ppd_sim_client.update_cookies(cookies)
 
         while config["Terminate"] == "False":
+            tasks = []
             try:
                 sleep_time = config["Sleep"] + random.randint(0, config["RandomSleep"])
                 if no_more_money:
@@ -135,7 +141,7 @@ def main():
                     if listing_ids:
                         logger.info(f"get list from U: {listing_ids}")
                     get_list_from = "U"
-                else:
+                elif get_list_from == "O3":
                     redis_loan_listings_str = redis_client.get('loan_listing_ids')
                     if redis_loan_listings_str is not None and redis_loan_listings_str != b"None":
                         redis_loan_listings = json.loads(redis_loan_listings_str)
@@ -143,6 +149,19 @@ def main():
                         listing_ids = redis_loan_listings
                         redis_client.delete("loan_listing_ids")
                         get_list_from = "Redis"
+                else:
+                    if get_list_from == "Redis":
+                        listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
+                        get_list_from = "O1"
+                    elif get_list_from == "O1":
+                        listing_ids = ppd_open_client_2.get_loan_list_ids(expected_ratings, expected_months)
+                        get_list_from = "O2"
+                    elif get_list_from == "O2":
+                        listing_ids = ppd_open_client_3.get_loan_list_ids(expected_ratings, expected_months)
+                        get_list_from = "O3"
+                    else:
+                        listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
+                        get_list_from = "O1"
 
                 if not listing_ids:
                     continue
@@ -159,6 +178,7 @@ def main():
 
                 listing_ids_cache.extendleft(listing_ids)
                 # logger.info(list(listing_ids_cache)[:15])
+
                 if listing_ids_len == 1:
                     item = ppd_sim_client.get_detail_info(listing_ids[0])
                     listing_detail_list.append(item)
@@ -174,15 +194,22 @@ def main():
                         if not can_bid:
                             continue
 
+                        # open_bid_result = ppd_open_client.bid(item['listingId'])
+                        # logger.log(21, f"bid open:{open_bid_result}")
+
+                        task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId']))
+                        tasks.append(task)
+
                         if not ppd_sim_client.check_bid_number(item):
                             continue
-
-                        # open_bid_result = ppd_open_client.bid(item['listingId'])
-                        # logger.log(21, f"{open_bid_result}")
 
                         item["strategy"] = first_strategy.name
                         if ppd_sim_client.bid_by_request(item):
                             logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
+
+                if tasks:
+                    aio_bid_result = loop.run_until_complete(asyncio.gather(*tasks))
+                    logger.log(21, f"bid open: {aio_bid_result}")
 
                 if listing_detail_list:
                     df = PandasUtils.save_list_to_csv(data_file_path, df, listing_detail_list)
@@ -197,7 +224,7 @@ def main():
 
             except PpdNeedSleepException as ex:
                 logger.warning(f"NeedSleepException, {ex}")
-                time.sleep(60 * 14)
+                time.sleep(60 * 13)
             except PpdNotEnoughMoneyException as ex:
                 no_more_money = True
                 logger.info("No more money")

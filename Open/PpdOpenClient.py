@@ -42,7 +42,7 @@ Hv2vAVJLCKeyVGEzxQIDAQAB
 '''
 
 
-# {"AccessToken":"2bd98865594dfea0e1aa6a7ef7093f57a64835252b6b8cd57ea09f7bab2c1945493480dc14992f9a922e1f08513ace4e494bc4d68e9b7ef12bac1e63","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
+#  2018-11-14 10:22:24,910  {"AccessToken":"79dad333594dfea0e1aa6a7ef7093f57641e5b9a6e7db51cb3bb3408ba1d94e8cb83c427f014dc1e611e91f3770ff6a0b32ae0a4c19ced9158324934","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 # {"AccessToken":"78d9d769594dfea0e1aa6a7ef7093f57b3e97dcfca2f75129f8f77f112909a473ba2d3be060259a59e2739c846b027aadf4c5e12dc4064cf83842a7c","ExpiresIn":604800,"OpenID":"a27effb5cc9f4d2fad1053642a155fe1","RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 #  {"AccessToken":"748ad369594dfea0e1aa6a7ef7093f572065cc02835959376e2c745e7af2ffd567df49d2191106df32ee26645216404e08ca5c434de837168428b0ca","ExpiresIn":604800,"RefreshToken":"2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"}
 class PpdOpenClient:
@@ -53,7 +53,7 @@ class PpdOpenClient:
 
         # 507d1c7703144dc19ddfd17e8028740b & state =
         self.code = "507d1c7703144dc19ddfd17e8028740b"
-        self.access_token = "288f8069594dfea0e1aa6a7ef7093f57b4d0603e6c172c0f74bcc6b366ed8e693a328d8800245d2b29c0df44626f2310d27250efb9e04c5041b59ccf"
+        self.access_token = "79dad333594dfea0e1aa6a7ef7093f57641e5b9a6e7db51cb3bb3408ba1d94e8cb83c427f014dc1e611e91f3770ff6a0b32ae0a4c19ced9158324934"
 
         self.listing_id_cache = deque(maxlen=200)
 
@@ -76,6 +76,9 @@ class PpdOpenClient:
         self.log_count = 0
         self.loan_list_page_index = 1
         pass
+
+    def set_access_token(self, access_token):
+        self.access_token = access_token
 
     def get_loan_list(self, page_index=1, time_delta_secs=None, timeout=None):
         # {
@@ -312,6 +315,22 @@ class PpdOpenClient:
 
         return listings
 
+    def get_loan_list_v3(self, filter_func):
+        loan_infos = self.get_loan_list_items()
+
+        if not loan_infos:
+            return None
+
+        listings = filter_func(loan_infos, self.listing_id_cache)
+        # new_listing_id = list(set(listing_ids).difference(self.listing_id_cache))
+        new_listing_id = [item["ListingId"] for item in listings]
+        if new_listing_id:
+            self.logger.info(
+                f"find from O{self.client_index}: {len(listings)}, {new_listing_id},{self.loan_list_time_delta_sec}")
+            self.listing_id_cache.extendleft(new_listing_id)
+
+        return listings
+
     def batch_get_listing_info(self, listing_ids):
         listing_infos = []
         for index in range(0, len(listing_ids), 10):
@@ -350,22 +369,36 @@ def main():
         # print("")
         # print(client.get_debt_info([118691808, 118691802, 118691801]))
 
-        # openid = "a27effb5cc9f4d2fad1053642a155fe1"
-        # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
-        # print(client.refresh_token(openid, refresh_token))
+        openid = "a27effb5cc9f4d2fad1053642a155fe1"
+        refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
+        print(client.refresh_token(openid, refresh_token))
 
         # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
-
+        #
         # balance_result = client.get_query_balance()
         # balance_result = json.loads(balance_result, encoding="utf-8")
-        # print(balance_result.get("Balance")[0])
+        # print(balance_result.get("Balance"))
         # if balance_result.get("Balance") and balance_result.get("Balance")[0].get("Balance") < 200:
         #     print("不足")
         # logger.info(balance_result)
 
-        logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
+        # logger.info(client.get_loan_list(time_delta_secs=-3000, page_index=1))
 
         # logger.info(client.get_bid_list(datetime.now() + timedelta(days=-30)))
+
+        # loan_list = client.get_loan_list_v3(lambda loan_lists, listing_id_cache: [item for item in loan_lists if
+        #                                                                        item["Months"] in [3, 6] and item[
+        #                                                                            "CreditCode"] == "B" and item.get(
+        #                                                                            "RemainFunding", 0) > 50 and item[
+        #                                                                            "ListingId"] not in listing_id_cache])
+
+        # filter_func = lambda loan_lists, listing_id_cache: [item for item in
+        #                                                     loan_lists if item["Months"] in [3, 6, 12]
+        #                                                       and item["CreditCode"] in ["AA", "A", "B", "C"]
+        #                                                       and item.get("RemainFunding", 0) > 50
+        #                                                       and item["ListingId"] not in listing_id_cache]
+        # loan_list = client.get_loan_list_v3(filter_func)
+        # logger.info(loan_list)
 
     except Exception as ex:
         print(ex)

@@ -1,6 +1,7 @@
 
 import logging
 import json
+import time
 
 
 class PpdItemConvertor:
@@ -54,7 +55,45 @@ class PpdItemConvertor:
 
         ui_item["成功还款次数"] = ui_item["正常还清次数"] + ui_item["逾期（0-15天）还清次数"] + ui_item["逾期（15天以上）还清次数"]
         ui_item["本次借款后负债"] = item["Amount"] + item["OwingAmount"]
+
+        current_time = time.localtime()
+        ui_item["creationDate"] = time.strftime('%Y-%m-%dT%H:%M:%S', current_time)
         return ui_item
+
+    def convert_open_borrower_statistics_to_flat(self, item):
+        overdueDayMap = item.get("overdueDayMap")
+        if overdueDayMap:
+            index = 0
+            for key, value in overdueDayMap.items():
+                # logging.info(f"{key} {value}")
+                item[f"overdueDayMap_{index}_month"] = key
+                item[f"overdueDayMap_{index}_value"] = value
+                index += 1
+            del item["overdueDayMap"]
+
+        previous_listings = item.get("previousListings", [])
+        if previous_listings:
+            index = 0
+            for previous_list in previous_listings:
+                item[f"previous_listing_{index}_date"] = previous_list.get("creationDate")
+                item[f"previous_listing_{index}_status"] = previous_list.get("statusId")
+                index += 1
+                # logging.info(f"{previous_list}")
+            del item["previousListings"]
+
+        if "loanAmountMax" in item:
+            del item["loanAmountMax"]
+
+        if "debtAmountMap" in item:
+            del item["debtAmountMap"]
+
+        if "listingStatics" in item:
+            del item["listingStatics"]
+
+        if "owingAmountMap" in item:
+            del item["owingAmountMap"]
+
+        return item
 
 
 def main():

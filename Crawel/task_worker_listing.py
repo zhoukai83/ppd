@@ -106,5 +106,9 @@ def main():
 
     print('worker exit')
 
+
+def test():
+    print(get_from_url())
+
 if __name__ == "__main__":
-    main()
+    test()

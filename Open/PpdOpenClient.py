@@ -9,6 +9,7 @@ import requests
 from Open.RsaClient import RsaClient
 import json
 from collections import deque
+import os
 
 privatekey_1 = '''
 -----BEGIN RSA PRIVATE KEY-----
@@ -16,28 +17,21 @@ MIICXQIBAAKBgQDDN2K33KPvgHUff4Ta29qvpgmvXvYUwSGoJoBznu7LMmdYZBx+YKUpN8ij7N+dbA1a
 -----END RSA PRIVATE KEY-----
 '''
 
-
 privatekey_2 = '''
 -----BEGIN RSA PRIVATE KEY-----
-MIICWwIBAAKBgQC3b6GQxhVufoR6naWN3kr0q33cocQmKsdtjOamGMJoyaLD+72GW72Sxg0Q76YdwWMiZWJra+1dC6pxMJYB7DIkko58DoN3SVm1LjdkPXaq+OAFcWUUtnCaTL/i3p11knW8XmgyYyYEireBFGwFaw/zKxm9Nhbg5uGOwaPuP4/iQQIDAQABAoGAVvEL7KhWBBbnB46spv8TG8AkWWw6obRo7V14/ISDsFLRWH56p7HXujcwfjR30WaVa/oNmch/qjgbQqa6kpK2eJ2lT19tW8rxmdnAQqImT48YrAJXFWBpvKGRrGmij1fHuyieksMLaNnSXeCWIbrz3oDXNnbOBRrOhfmmnKw+llkCQQDbyKEafNJvWSpUN0VkxVO0EQTDa7taVdilzDJ6tI+6HFDfarFMvpD4LbHTp/qQq0LZssEQUGOOjknuozG14sGPAkEA1am1y0o/cdViBzJGjQ9ppwNtLg5AhhgtLXO2witAQKEhYoaqbjEoIqP8wVFiBgtFpkr8XJgn/QcxToXaEY2XLwJAcp2JLmgD0d+dDHgabzfcs93gLw1CkhSMu8HmXUlGXtcfcbORLKWAsnwZ7Xf/WmyFm0P2HMzfbltTwOhIJ0NOjwJAcMoZ8arMOydNjEb5/1T3jPa+F+XmIeN5VdkTzQRP8s4cdYppRaolacPvlY2ElXQ13EcRWT/pPCUj3jPCnimEeQJAE+ukIXgNEkF2tZxf4SAbBqCCOVmFzSkZmJLYzbPjfTg4NMBZqT/9BMeh16mMcjZBio8ClYJV8XFqoZ7v9WWN7g==
+MIICXAIBAAKBgQCBUDp6YFA76M1OiPGChrn42ti5l4iUvpO+SC2v+TXupZLmYPSPZbnEImbigTVGdDb6q4/AA3PNx+OOZnVKSJMz3PKW3ATx+wzhlCN+fZyIVJKvM5mFnauTGxkKlDcQqgxOX4bAaITA7gDJCuygUHg6qHE72Z2AJD1VTCl0lijI7QIDAQABAoGAVhT9SLfS0X7RJSWeeACNzm6I9Us9vZ78JSBRYaKpV1tbZgdG5iqWtk0cZk4TE/qLGuWYRP9HWMZm4kWscK3NZy0d1LAqcqk+/3XBDsem+38fP4s0qgoP9kee1NLKzjtzxstxkRgUE43Mlh2WpKEgDDQ9Z6lKh6Iu7jh9co1edYECQQD0c95eDNGbJQIPHFgE0IrKQZEHPWqIGneDmsen0Glwb38v/GsBFJE3YX3kfm5MWcdEPAC7Bo9aAVUFMSTJtM1hAkEAh2v/TOOc+1lfTRF/h/SAbfzuxP674naKqw5khoAyN5OJWykQT7IS2AoMmlXLlkFzdEzSEVs3n5a/Bf8SQcU7DQJAQePtf0pTQU9TY8FPFFUl4+iSb/IlAfSoXEffIyOxGAZlsQiHyy3BCr1zkqBlmJzmckT+KWtWPnt3cEPT166tYQJAUYga+A7dt5JyRzMuxgrVu+KZWq9HLSxThnMu4K+UDFPeUa0ibej3YWyDc/QNk5QqT63kl6CEl6epsJGGS2TUjQJBAO2/QnFx2eLSveUiGcwWeH48kDaJQHq2VHe7x0MEFdeU+HpCMaVlRLEDndLHowYRfU70OY4s60OTT8sr/oaHAts=
 -----END RSA PRIVATE KEY-----
 '''
 
 privatekey_3 = '''
 -----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfOK+XUw/CXEmg/xTXRLPVXiin
-bzYMKbd0vnkPetbAN+3mSBdST1d0cDssNdXm68M6fHbhrfVCCigkfnv6s16n7eY/
-AVm2MajuhFCy8nROEPhgZkFDLp8VZGwULDmeXk8EdTy5h3AEx9beDwn9i4jy/69v
-vfuOes4QOaIL+QB/PQIDAQAB
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfOK+XUw/CXEmg/xTXRLPVXiinbzYMKbd0vnkPetbAN+3mSBdST1d0cDssNdXm68M6fHbhrfVCCigkfnv6s16n7eY/AVm2MajuhFCy8nROEPhgZkFDLp8VZGwULDmeXk8EdTy5h3AEx9beDwn9i4jy/69vvfuOes4QOaIL+QB/PQIDAQAB
 -----END PUBLIC KEY-----
 '''
 
 privatekey_4 = '''
 -----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfyx0dAG2LcoItKtj5lvIES9Uu
-7jrRZsIGNJlR63EbWnVEGLnW1p2s+rVcfp6Ei7qMysHBLUgTArdDr3/oPbX59Ga3
-N1YHF03hc/XvSZv+Za3F0DouS7zUHjHmsHKKxTQ5uaChyKHAMG1beFHKPACO2cnw
-Hv2vAVJLCKeyVGEzxQIDAQAB
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfyx0dAG2LcoItKtj5lvIES9Uu7jrRZsIGNJlR63EbWnVEGLnW1p2s+rVcfp6Ei7qMysHBLUgTArdDr3/oPbX59Ga3N1YHF03hc/XvSZv+Za3F0DouS7zUHjHmsHKKxTQ5uaChyKHAMG1beFHKPACO2cnwHv2vAVJLCKeyVGEzxQIDAQAB
 -----END PUBLIC KEY-----
 '''
 
@@ -48,34 +42,37 @@ Hv2vAVJLCKeyVGEzxQIDAQAB
 class PpdOpenClient:
     def __init__(self, logger=None, key_index=1):
         self.session = requests.Session()
-        self.appid = "9ed4a9e198384310a12afd69a015787a"
+
         self.logger = logger or logging.getLogger(__name__)
 
-        # 507d1c7703144dc19ddfd17e8028740b & state =
-        self.code = "507d1c7703144dc19ddfd17e8028740b"
-        self.access_token = "79dad333594dfea0e1aa6a7ef7093f57641e5b9a6e7db51cb3bb3408ba1d94e8cb83c427f014dc1e611e91f3770ff6a0b32ae0a4c19ced9158324934"
+        if key_index < 1 or key_index > 4:
+            raise ValueError(f"Do not support key index: {key_index}")
 
+        self.config = self.__get_config(key_index)
+        # 507d1c7703144dc19ddfd17e8028740b & state =
+
+        self.appid = self.config["appid"]
+        # self.code = "507d1c7703144dc19ddfd17e8028740b"
+        self.access_token = self.config["AccessToken"]
+
+        self.private_key = "\r\n".join(["-----BEGIN RSA PRIVATE KEY-----", self.config["privatekey"], "-----END RSA PRIVATE KEY-----"])
         self.listing_id_cache = deque(maxlen=200)
 
         self.loan_list_time_delta_sec = -60 * 15
         self.client_index = key_index
 
-        if key_index == 1:
-            private_key = privatekey_1
-        elif key_index == 2:
-            private_key = privatekey_2
-        elif key_index == 3:
-            private_key = privatekey_3
-        elif key_index == 4:
-            private_key = privatekey_4
-        else:
-            raise ValueError(f"Do not support key index: {key_index}")
-        self.rsa_client = RsaClient(private_key)
+        self.rsa_client = RsaClient(self.private_key)
         self.request_exceptin_count = 0
 
         self.log_count = 0
         self.loan_list_page_index = 1
         pass
+
+    def __get_config(self, key_index):
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'PpdOpenClient.json')) as f:
+            data = json.load(f)
+            config = data[f"client{key_index}"]
+            return config
 
     def set_access_token(self, access_token):
         self.access_token = access_token
@@ -159,6 +156,7 @@ class PpdOpenClient:
 
         return self.post(url, data=data)
 
+    # 50次/min	获取债权可购买列表
     def get_buy_list(self, page_index=1, levels=None):
         url = "https://openapi.ppdai.com/debt/openapiNoAuth/buyList"
         data = {
@@ -169,6 +167,15 @@ class PpdOpenClient:
             data["Levels"] = levels
 
         return self.post(url, data=data)
+
+    def buy_debt(self, debt_id):
+        access_url = "https://openapi.ppdai.com/debt/openapi/buy"
+        data = {
+            "DebtDealId": debt_id
+        }
+
+        return self.post(access_url, data=data, access_token=self.access_token)
+
 
     def get_debt_info(self, debt_ids):
         # if len(debt_ids) > 10:
@@ -249,6 +256,7 @@ class PpdOpenClient:
 
     def get_loan_list_items(self):
         new_listing_items = None
+        result = None
         try:
             result = self.get_loan_list(time_delta_secs=self.loan_list_time_delta_sec, timeout=0.5,
                                         page_index=self.loan_list_page_index)
@@ -349,13 +357,23 @@ class PpdOpenClient:
         return listing_infos
 
 
+def auth():
+    logger.info("start")
+    client = PpdOpenClient(key_index=2)
+    try:
+        logger.info("Get access token")
+        logger.info(client.get_access_token("a3e1d4f91d7e4c8b8dcc75ffbcea9ca3"))
+    except Exception as ex:
+        print("exception", ex)
 
 
 
 def main():
     # client = PpdOpenClient()
-    client = PpdOpenClient(key_index=1)
+
+    client = PpdOpenClient(key_index=4)
     listing_ids = [129967042, 129967782]
+    logger.info(client.private_key)
 
     try:
         # open_detail_infos = client.batch_get_listing_info(listing_ids)
@@ -364,16 +382,16 @@ def main():
         # filtered_open_listing_ids = [item["ListingId"] for item in open_detail_infos if item.get("NormalCount", 0) > 20 and (item["NormalCount"] * 1.0 / (
         #             item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) > 0.9]
         # logger.info(f"filter listing id: {len(filtered_open_listing_ids)}, {len(open_detail_infos)} {filtered_open_listing_ids}")
-        # print(client.get_buy_list(levels="B"))
+        # logger.info(client.get_buy_list(levels="AA"))
 
         # print("")
         # print(client.get_debt_info([118691808, 118691802, 118691801]))
 
-        openid = "a27effb5cc9f4d2fad1053642a155fe1"
-        refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
-        print(client.refresh_token(openid, refresh_token))
+        # openid = "a27effb5cc9f4d2fad1053642a155fe1"
+        # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
+        # print(client.refresh_token(openid, refresh_token))
 
-        # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
+        logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
         #
         # balance_result = client.get_query_balance()
         # balance_result = json.loads(balance_result, encoding="utf-8")

@@ -93,7 +93,7 @@ def main():
     strategy_factory = UIStrategyFactory()
     ppd_sim_client = PpdUISimulationRequest()
     ppd_open_client = AioOpenClient()
-    ppd_open_client_2 = PpdOpenClient(key_index=2)
+    ppd_open_client_2 = AioOpenClient(key_index=2)
     ppd_open_client_3 = PpdOpenClient(key_index=3)
     no_more_money = False
     df = None
@@ -163,7 +163,7 @@ def main():
                     elif get_list_from == "O1":
                         listing_ids = ppd_open_client_2.get_loan_list_ids(expected_ratings, expected_months)
                         get_list_from = "O2"
-                    elif get_list_from == "O2":
+                    elif get_list_from == "O1":
                         listing_ids = ppd_open_client_3.get_loan_list_ids(expected_ratings, expected_months)
                         get_list_from = "O3"
                     else:
@@ -205,6 +205,9 @@ def main():
 
                         task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId']))
                         tasks.append(task)
+
+                        task2 = asyncio.ensure_future(ppd_open_client_2.aio_bid(item['listingId']))
+                        tasks.append(task2)
 
                         # if not ppd_sim_client.check_bid_number(item):
                         #     continue

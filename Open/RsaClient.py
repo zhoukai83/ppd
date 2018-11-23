@@ -7,10 +7,15 @@ MIICXQIBAAKBgQDDN2K33KPvgHUff4Ta29qvpgmvXvYUwSGoJoBznu7LMmdYZBx+YKUpN8ij7N+dbA1a
 -----END RSA PRIVATE KEY-----
 '''
 
+# privatekey = '''
+# -----BEGIN RSA PRIVATE KEY-----
+# MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAJMZPZ0DukRrlkg9wx0BVKjww80PpNoTjNRTou++7+ZxQvCRPIT7ZBmVmbhwUEm94wpzkiv8+qspXgYnpHPzanGPZJmWnPDBi5NvNJOV2e5bMw6QtNcS12/dxGW4nOR3JKzxoQtjst/+RxsWjgmoK+ixFOePDNehx1BZT8FP4XH7AgMBAAECgYBcZTVTQ70jLuTlmY3N0UEpIJoMWvA0XqVN1P76UleDys6+Jqv556H3hAVbWYjE2PYcYX2GDdAx5Lj/arUcc9/+X12CQaVvVcFGl2lhLIu4h8dunr2b6zoer8YKfOwEZLKpOg1dy4vk58jhPbPlLuwt9mtRfPLL0Sdu78dXVAjQIQJBAOVfvIxcG0kBR0PhuH7DNbRHzkxSz5zXqnAN8UzOGXz15shrUQAbVhwh2choEhNpf4ItwsuKIa0VmMHvzEhp1hECQQCkLIrOkQBi2ejP7M6A70ZFeCsUDfuwixlz09sh3lHHhf6H2FPnCtCpkuGbCArnfjpTlIBlra2tx2B+oNHA3QtLAkBH6asQinQXgGoaczNHsuYsfnLEZRYoQ0lxVj236cn97o6LeXHsyaVGrqo79bztDx9l7fjrnYQPYv0AmLEAZwYxAkEAj2UAUHBCIBUozgOOUvurKx5MshWMkqTMNGkE604dq+ITcV+32QOPQa2zNBAQRiXwl/QLOcQ7AKA2XiPlUUlAhQJAOzbYO3Jf0DdgMKyzXrsJIYvvIOJxYdTPCJO+c3cDwqzDFNc31Uzn5rpwPvXgvwC3Vog+KzzwYD4914Y01+EZCg==
+# -----END RSA PRIVATE KEY-----
+# '''
 
-privatekey_2 = '''
+privatekey2 = '''
 -----BEGIN RSA PRIVATE KEY-----
-MIICWwIBAAKBgQC3b6GQxhVufoR6naWN3kr0q33cocQmKsdtjOamGMJoyaLD+72GW72Sxg0Q76YdwWMiZWJra+1dC6pxMJYB7DIkko58DoN3SVm1LjdkPXaq+OAFcWUUtnCaTL/i3p11knW8XmgyYyYEireBFGwFaw/zKxm9Nhbg5uGOwaPuP4/iQQIDAQABAoGAVvEL7KhWBBbnB46spv8TG8AkWWw6obRo7V14/ISDsFLRWH56p7HXujcwfjR30WaVa/oNmch/qjgbQqa6kpK2eJ2lT19tW8rxmdnAQqImT48YrAJXFWBpvKGRrGmij1fHuyieksMLaNnSXeCWIbrz3oDXNnbOBRrOhfmmnKw+llkCQQDbyKEafNJvWSpUN0VkxVO0EQTDa7taVdilzDJ6tI+6HFDfarFMvpD4LbHTp/qQq0LZssEQUGOOjknuozG14sGPAkEA1am1y0o/cdViBzJGjQ9ppwNtLg5AhhgtLXO2witAQKEhYoaqbjEoIqP8wVFiBgtFpkr8XJgn/QcxToXaEY2XLwJAcp2JLmgD0d+dDHgabzfcs93gLw1CkhSMu8HmXUlGXtcfcbORLKWAsnwZ7Xf/WmyFm0P2HMzfbltTwOhIJ0NOjwJAcMoZ8arMOydNjEb5/1T3jPa+F+XmIeN5VdkTzQRP8s4cdYppRaolacPvlY2ElXQ13EcRWT/pPCUj3jPCnimEeQJAE+ukIXgNEkF2tZxf4SAbBqCCOVmFzSkZmJLYzbPjfTg4NMBZqT/9BMeh16mMcjZBio8ClYJV8XFqoZ7v9WWN7g==
+MIICXAIBAAKBgQCBUDp6YFA76M1OiPGChrn42ti5l4iUvpO+SC2v+TXupZLmYPSPZbnEImbigTVGdDb6q4/AA3PNx+OOZnVKSJMz3PKW3ATx+wzhlCN+fZyIVJKvM5mFnauTGxkKlDcQqgxOX4bAaITA7gDJCuygUHg6qHE72Z2AJD1VTCl0lijI7QIDAQABAoGAVhT9SLfS0X7RJSWeeACNzm6I9Us9vZ78JSBRYaKpV1tbZgdG5iqWtk0cZk4TE/qLGuWYRP9HWMZm4kWscK3NZy0d1LAqcqk+/3XBDsem+38fP4s0qgoP9kee1NLKzjtzxstxkRgUE43Mlh2WpKEgDDQ9Z6lKh6Iu7jh9co1edYECQQD0c95eDNGbJQIPHFgE0IrKQZEHPWqIGneDmsen0Glwb38v/GsBFJE3YX3kfm5MWcdEPAC7Bo9aAVUFMSTJtM1hAkEAh2v/TOOc+1lfTRF/h/SAbfzuxP674naKqw5khoAyN5OJWykQT7IS2AoMmlXLlkFzdEzSEVs3n5a/Bf8SQcU7DQJAQePtf0pTQU9TY8FPFFUl4+iSb/IlAfSoXEffIyOxGAZlsQiHyy3BCr1zkqBlmJzmckT+KWtWPnt3cEPT166tYQJAUYga+A7dt5JyRzMuxgrVu+KZWq9HLSxThnMu4K+UDFPeUa0ibej3YWyDc/QNk5QqT63kl6CEl6epsJGGS2TUjQJBAO2/QnFx2eLSveUiGcwWeH48kDaJQHq2VHe7x0MEFdeU+HpCMaVlRLEDndLHowYRfU70OY4s60OTT8sr/oaHAts=
 -----END RSA PRIVATE KEY-----
 '''
 publickey = ""
@@ -60,43 +65,48 @@ class RsaClient:
         return decrypted
 
 
-    @staticmethod
-    def sign(signdata):
-        '''''
-        @param signdata: 需要签名的字符串
-        '''
-        signdata = signdata.lower().encode('utf-8')
-        PrivateKey = rsa.PrivateKey.load_pkcs1(privatekey)
-        rsa_sign = rsa.sign(signdata, PrivateKey, 'SHA-1')
-        signature = base64.b64encode(rsa_sign)
-        return signature
-
+    # @staticmethod
+    # def sign(signdata):
+    #     '''''
+    #     @param signdata: 需要签名的字符串
+    #     '''
+    #     signdata = signdata.lower().encode('utf-8')
+    #     # print("static sign")
+    #     # from pyasn1.codec.der import decoder
+    #     # (priv, _) = decoder.decode(privatekey_2)
+    #     # print(priv)
     #
-
-    @staticmethod
-    def sort(dicts):
-        '''''
-        作用类似与java的treemap,
-        取出key值,按照字母排序后将keyvalue拼接起来
-        返回字符串
-        '''
-        dics = sorted(dicts.items(), key=lambda k: k[0])
-        params = ""
-        for dic in dics:
-            if type(dic[1]) is str:
-                params += dic[0] + dic[1]
-        return params
-
-    @staticmethod
-    def encrypt(encryptdata):
-        PublicKey = rsa.PublicKey.load_pkcs1_openssl_pem(publickey)
-        # PublicKey = rsa.PublicKey.load_pkcs1(Global.publickey)
-        encrypted = base64.b64encode(rsa.encrypt(encryptdata, PublicKey))
-        return encrypted
-
-    @staticmethod
-    def decrypt(decryptdata):
-        PrivateKey = rsa.PrivateKey.load_pkcs1(privatekey)
-        # decrypted = base64.b64decode(rsa.decrypt(decryptdata, PrivateKey))
-        decrypted = rsa.decrypt(base64.b64decode(decryptdata), PrivateKey)
-        return decrypted
+    #     # der = rsa.pem.load_pem(privatekey_2, b('RSA PRIVATE KEY'))
+    #     # print(der)
+    #     PrivateKey = rsa.PrivateKey.load_pkcs1(privatekey2)
+    #     rsa_sign = rsa.sign(signdata, PrivateKey, 'SHA-1')
+    #     signature = base64.b64encode(rsa_sign)
+    #     return signature
+    #
+    # @staticmethod
+    # def sort(dicts):
+    #     '''''
+    #     作用类似与java的treemap,
+    #     取出key值,按照字母排序后将keyvalue拼接起来
+    #     返回字符串
+    #     '''
+    #     dics = sorted(dicts.items(), key=lambda k: k[0])
+    #     params = ""
+    #     for dic in dics:
+    #         if type(dic[1]) is str:
+    #             params += dic[0] + dic[1]
+    #     return params
+    #
+    # @staticmethod
+    # def encrypt(encryptdata):
+    #     PublicKey = rsa.PublicKey.load_pkcs1_openssl_pem(publickey)
+    #     # PublicKey = rsa.PublicKey.load_pkcs1(Global.publickey)
+    #     encrypted = base64.b64encode(rsa.encrypt(encryptdata, PublicKey))
+    #     return encrypted
+    #
+    # @staticmethod
+    # def decrypt(decryptdata):
+    #     PrivateKey = rsa.PrivateKey.load_pkcs1(privatekey)
+    #     # decrypted = base64.b64decode(rsa.decrypt(decryptdata, PrivateKey))
+    #     decrypted = rsa.decrypt(base64.b64decode(decryptdata), PrivateKey)
+    #     return decrypted

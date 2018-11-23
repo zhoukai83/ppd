@@ -116,7 +116,7 @@ def main():
     listing_ids_cache = deque(maxlen=1000)
     last_refresh_list_time = time.time()
 
-    page_index = 24
+    page_index = 15
     while True:
         try:
             logger.info(f"page_index: {page_index}")

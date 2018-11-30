@@ -51,6 +51,8 @@ def should_bid(item):
 
 def main():
     ppd_open_client = AioOpenClient(key_index=1)
+    ppd_open_client2 = AioOpenClient(key_index=2)
+    ppd_open_client3 = AioOpenClient(key_index=3)
     terminate = False
 
     df = None
@@ -62,13 +64,24 @@ def main():
         listing_id_cache = deque(df["ListingId"].tail(50).tolist(), maxlen=50)
 
     config = refresh_config()
+    current_client_index = 1
 
     while config["Terminate"] == "False":
         config = refresh_config()
-        time.sleep(1.4)
+        # logger.info("start")
+        time.sleep(0.37)
 
         try:
-            buy_list_str = ppd_open_client.get_buy_list(levels="AA")
+            if current_client_index == 1:
+                buy_list_str = ppd_open_client.get_buy_list(levels="AA")
+                current_client_index = 2
+            elif current_client_index == 2:
+                buy_list_str = ppd_open_client2.get_buy_list(levels="AA")
+                current_client_index = 3
+            else:
+                buy_list_str = ppd_open_client3.get_buy_list(levels="AA")
+                current_client_index = 1
+
             json_data = json.loads(buy_list_str)
 
             if not json_data.get("Result") == 1:

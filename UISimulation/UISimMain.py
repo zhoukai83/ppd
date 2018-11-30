@@ -209,12 +209,12 @@ def main():
                         task2 = asyncio.ensure_future(ppd_open_client_2.aio_bid(item['listingId']))
                         tasks.append(task2)
 
-                        # if not ppd_sim_client.check_bid_number(item):
-                        #     continue
-                        #
-                        # item["strategy"] = first_strategy.name
-                        # if ppd_sim_client.bid_by_request(item):
-                        logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
+                        if not ppd_sim_client.check_bid_number(item):
+                            continue
+
+                        item["strategy"] = first_strategy.name
+                        if ppd_sim_client.bid_by_request(item):
+                            logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
 
                 if tasks:
                     aio_bid_result = loop.run_until_complete(asyncio.gather(*tasks))

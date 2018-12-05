@@ -138,7 +138,7 @@ class PpdUISimulationRequest:
 
         result_code = json_data.get("result", -999)
         if result_code != 1:
-            self.logger.warning(f"get_show_listing_base_info f{listing_id}: return f{json_data}")
+            self.logger.warning(f"get_show_listing_base_info {listing_id}: return {json_data}")
 
             if result_code == 1012:
                 raise PpdNeedSleepException
@@ -172,7 +172,7 @@ class PpdUISimulationRequest:
 
         result_code = json_data.get("result", -999)
         if result_code != 1:
-            self.logger.warning(f"get_show_borrower_info f{listing_id}: return f{json_data}")
+            self.logger.warning(f"get_show_borrower_info {listing_id}: return {json_data}")
 
             if result_code == 1012:
                 raise PpdNeedSleepException

@@ -122,7 +122,7 @@ def main():
                                                                     loan_lists if item["Months"] in month_list
                                                                     and item["CreditCode"] in ["AA"]
                                                                     and item.get("RemainFunding", 0) > 500
-                                                                    and item.get("Rate") >= 9
+                                                                    and item.get("Rate") >= 8.5
                                                                     and item["ListingId"] not in listing_id_cache][:4]
                 lists = ppd_open_client.get_loan_list_v3(filter_func)
                 if not lists:

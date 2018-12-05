@@ -371,7 +371,7 @@ def auth():
 def main():
     # client = PpdOpenClient()
 
-    client = PpdOpenClient(key_index=1)
+    client = PpdOpenClient(key_index=2)
     listing_ids = [129967042, 129967782]
     logger.info(client.private_key)
 
@@ -387,11 +387,15 @@ def main():
         # print("")
         # print(client.get_debt_info([118691808, 118691802, 118691801]))
 
-        openid = "a27effb5cc9f4d2fad1053642a155fe1"
-        refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
-        print(client.refresh_token(openid, refresh_token))
+        # openid = "a27effb5cc9f4d2fad1053642a155fe1"
+        # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
+        # print(client.refresh_token(openid, refresh_token))
 
-        # logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
+        # openid = "77e88d5ccb7d4ba6955c9e4a0e132dc6"
+        # refresh_token = "78ddd332594dfea0e1aa6a7ef7093f57d7d04bdbfaac9bf9956f11a2"
+        # print(client.refresh_token(openid, refresh_token))
+
+        logging.info(client.get_loan_list_ids(["B", "C"], [3, 6]))
         #
         # balance_result = client.get_query_balance()
         # balance_result = json.loads(balance_result, encoding="utf-8")
@@ -429,7 +433,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     try:
-        # main()
-        auth()
+        main()
+        # auth()
     except Exception as ex:
         print(ex)

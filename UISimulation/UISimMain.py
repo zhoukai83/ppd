@@ -39,21 +39,21 @@ def restore_config():
 
 
 def filter_item_if_too_many(item):
-    if item.get("NormalCount", 0) < 20:
+    if item.get("NormalCount", 0) < 25:
         return False
 
-    if item["RemainFunding"] == 0:
+    if item["RemainFunding"] <= 70:
         return False
 
-    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.8:
+    if (item["NormalCount"] * 1.0 / (item["NormalCount"] + item["OverdueLessCount"] + item["OverdueMoreCount"])) < 0.9:
         return False
 
     # "HighestDebt": "历史最高负债",  "OwingAmount": "待还金额",  "Amount": "借款金额",
-    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1.1:
+    if (item["OwingAmount"] + item["Amount"]) / item["HighestDebt"] >= 1:
         return False
 
     # "HighestPrincipal": "单笔最高借款金额",
-    if item["Amount"] / item["HighestPrincipal"] > 1.1:
+    if item["Amount"] / item["HighestPrincipal"] >= 1:
         return False
 
     return True
@@ -157,18 +157,27 @@ def main():
                         redis_client.delete("loan_listing_ids")
                         get_list_from = "Redis"
                 else:
+                    loan_list_items = []
+                    listing_ids = []
                     if get_list_from == "Redis":
                         listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
+                        # loan_list_items = ppd_open_client.get_loan_list_items()
                         get_list_from = "O1"
                     elif get_list_from == "O1":
                         listing_ids = ppd_open_client_2.get_loan_list_ids(expected_ratings, expected_months)
+                        # loan_list_items = ppd_open_client_2.get_loan_list_items()
                         get_list_from = "O2"
                     elif get_list_from == "O1":
                         listing_ids = ppd_open_client_3.get_loan_list_ids(expected_ratings, expected_months)
+                        # loan_list_items = ppd_open_client_3.get_loan_list_items()
                         get_list_from = "O3"
                     else:
                         listing_ids = ppd_open_client.get_loan_list_ids(expected_ratings, expected_months)
+                        # loan_list_items = ppd_open_client.get_loan_list_items()
                         get_list_from = "O1"
+
+                    # if loan_list_items:
+                    #     listing_ids = [item["ListingId"] for item in loan_list_items if item["Months"] in expected_months and item["CreditCode"] in expected_ratings and item.get("RemainFunding", 0) > 50 and "第1次" not in item.get("Title") and "第2次" not in item.get("Title")]
 
                 if not listing_ids:
                     continue
@@ -225,11 +234,13 @@ def main():
 
                     len_listing_detail_list = len(listing_detail_list)
                     if len_listing_detail_list >= 5:
-                        time.sleep(1.9 * len_listing_detail_list)
+                        time.sleep(2.6 * len_listing_detail_list)
                     elif len_listing_detail_list >= 4:
-                        time.sleep(1.6 * len_listing_detail_list)
+                        time.sleep(2.3 * len_listing_detail_list)
                     elif len_listing_detail_list == 3:
-                        time.sleep(1.2 * len_listing_detail_list)
+                        time.sleep(2 * len_listing_detail_list)
+                    else:
+                        time.sleep(1)
 
             except PpdNeedSleepException as ex:
                 logger.warning(f"NeedSleepException, {ex}")

@@ -1,0 +1,31 @@
+{
+    "MR-EKAIZHO-01": {
+        "Sleep": 0.3,
+        "RandomSleep": 0,
+        "RefreshListTime": 2.5,
+        "Session": "241878f81d1b19ed38656d628ad614fb",
+        "Status": "Paue1",
+        "Terminate": "False",
+        "comments": "total RefreshListTime can not 1.2 - 1.3 if using ui,  0.12 using openapi",
+        "AccessToken": "79dad333594dfea0e1aa6a7ef7093f57641e5b9a6e7db51cb3bb3408ba1d94e8cb83c427f014dc1e611e91f3770ff6a0b32ae0a4c19ced9158324934",
+        "RefreshToken": "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076",
+        "OpenId": "a27effb5cc9f4d2fad1053642a155fe1",
+        "TokenUpdateTime": "2018-11-14 10:22:24.910"
+    },
+    "MR-EID-05": {
+        "Sleep": 1,
+        "RandomSleep": 3,
+        "Session": "51827a940968feb3dc3a5fa3c47ce7c2",
+        "Status": "Pause1",
+        "Terminate": "False"
+    },
+    "4MGB8Q3Z8NJL7GZ": {
+        "Sleep": 0.01,
+        "RandomSleep": 0,
+        "RefreshListTime": 4,
+        "Session": "ca36950782f0ac6eb741215dabb5235b",
+        "Status": "Pause1",
+        "Terminate": "False",
+        "comments": "total RefreshListTime can not 1.2 - 1.3 if using ui,  0.12 using openapi"
+    }
+}

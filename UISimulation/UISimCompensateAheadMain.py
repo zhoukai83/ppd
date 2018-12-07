@@ -122,7 +122,7 @@ def main():
                                                                     loan_lists if item["Months"] in month_list
                                                                     and item["CreditCode"] in ["AA"]
                                                                     and item.get("RemainFunding", 0) > 500
-                                                                    and item.get("Rate") >= 8.5
+                                                                    and item.get("Rate") >= 9.5
                                                                     and item["ListingId"] not in listing_id_cache][:4]
                 lists = ppd_open_client.get_loan_list_v3(filter_func)
                 if not lists:
@@ -171,10 +171,11 @@ def main():
                     if result_code == 9999:
                         success_num += 1
 
-                    if result_code == 4001:
-                        terminate = True
-                        break
+                    # if result_code == 4001:    #余额不足
+                    #     terminate = True
+                    #     break
 
+                logger.info(f"{may_ahead_lists}")
                 df = PandasUtils.save_list_to_csv(data_file_path, df, lists)
                 # logger.info(f"sleep, {len(success_count_greator_1)}")
                 # time.sleep(len(success_count_greator_1) * 2)

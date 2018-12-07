@@ -72,9 +72,9 @@ def analysis_rating_chagne():
 
         warning_message = ""
         if combine_item["pastDueDay"] >= 4:
-            warning_message = f"{item['listingId']} Change to {item['currentCreditCode']} {item['priceForSale']} {combine_item['pastDueDay']}"
+            warning_message = f"{item['listingId']} Change to {item['currentCreditCode']} {item['priceForSale']}  最长逾期:{combine_item['pastDueDay']} 逾期数:{combine_item['pastDueNumber']} value: {combine_item['valuation']}"
         if item["currentCreditCode"] in ["D", "E", "F", "G"]:
-            warning_message = f"{item['listingId']} Change to {item['currentCreditCode']} {item['priceForSale']} {combine_item['pastDueDay']}"
+            warning_message = f"{item['listingId']} Change to {item['currentCreditCode']} {item['priceForSale']}  最长逾期:{combine_item['pastDueDay']} 逾期数:{combine_item['pastDueNumber']} value: {combine_item['valuation']}"
             count += 1
         if warning_message != "":
             logger.log(21, warning_message)
@@ -83,18 +83,19 @@ def analysis_rating_chagne():
             detail_info = client.get_detail_info(combine_item["listingId"])
             debt_rate = CommonUtils.convert_to_float(detail_info["待还金额"]) / CommonUtils.convert_to_float(
                 detail_info["历史最高负债"])
+            pastDueDay = combine_item["pastDueDay"]
             if detail_info["网络借贷平台借款余额"] >= 10000:
-                logger.log(21, f"{item['listingId']}  网络借贷平台借款余额 too large   网络:{detail_info['网络借贷平台借款余额']}, 最长逾期:{combine_item['pastDueDay']} debtRate: {debt_rate} {detail_info}")
+                logger.log(21, f"{item['listingId']}  网络借贷平台借款余额 too large  网络:{detail_info['网络借贷平台借款余额']}, 最长逾期:{combine_item['pastDueDay']} 逾期数:{combine_item['pastDueNumber']} value: {combine_item['valuation']} debtRate: {debt_rate} {detail_info}")
             if debt_rate >= 1:
-                logger.log(21, f"{item['listingId']} 待还金额/历史最高负债 too large   网络:{detail_info['网络借贷平台借款余额']}, 最长逾期:{combine_item['pastDueDay']} debtRate: {debt_rate}")
-            time.sleep(10)
+                logger.log(21, f"{item['listingId']} 待还金额/历史最高负债 too large  网络:{detail_info['网络借贷平台借款余额']}, 最长逾期:{combine_item['pastDueDay']} 逾期数:{combine_item['pastDueNumber']} value: {combine_item['valuation']} debtRate: {debt_rate} {detail_info}")
+            time.sleep(7)
 
         datas.append(combine_item)
 
     df = DataFrame(datas)
     df = pd.concat([df_file, df], ignore_index=True, sort=False)
     df.to_csv(file_name, index=False)
-    print(count)
+    print(f"total count:{len(datas)} {count}")
 
 def get_available_apply_list():
     cookies = "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; __utmc=1; __utma=1.1098278737.1530780657.1540786794.1540874893.54; __utmz=1.1540874893.54.54.utmcsr=ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/moneyhistory; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1540535505,1540536242,1540786823,1540874918; Hm_lpvt_aab1030ecb68cd7b5c613bd7a5127a40=1540874920; aliyungf_tc=AQAAAMf723JYfgMAjlD3PKjIVYIDUr25; regSourceId=0; referID=0; fromUrl=https%3A%2F%2Ftransfer.ppdai.com%2Fmenu%2Fnegotiable%2Fapplynew; referDate=2018-11-23%2011%3A26%3A4; openid=cdda7ce1e0bcfdaa2503c4f0770aabe4; ppd_uname=pdu8953799660; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1543218607; currentUrl=https%3A%2F%2Finvest.ppdai.com%2Faccount%2Fcoupon%3Frequesttype%3D1; __tsid=262473610; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1543550883; token=2cd98268594dfea0e1aa6a7ef7093f57636377dc34ddd547c7df1d215670f999d577a47fa5de4e04ec; noticeflag=true; __vsr=1543544836773.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1543803250989.refSite%3Dhttps%3A//pay.ppdai.com/Withdraw/CashSuc%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1543817579784.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1543822504570.refSite%3Dhttps%3A//transfer.ppdai.com/menu/negotiable/applyNew%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1543830189699.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; __sid=1543891321974.4.1543891597918; waterMarkTimeCheck1=12%2F04%2F2018+10%3A46%3A39"
@@ -108,9 +109,9 @@ def get_available_apply_list():
             print(item)
 
 def main():
-    # analysis_rating_chagne()
+    analysis_rating_chagne()
 
-    get_available_apply_list()
+    # get_available_apply_list()
 
     # open_client = PpdOpenClient(key_index=1)
     # open_client.batch_get_listing_info([])

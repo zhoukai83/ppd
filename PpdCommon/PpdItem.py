@@ -8,6 +8,70 @@ class PpdItemConvertor:
     def __init(self, logger):
         self.logger = logger or logging.getLogger(__name__)
 
+    def convert_uisim_listing_pager_auth_to_ui(self, item):
+        ui_item = {}
+        key_dict = {
+                "amount": "借款金额",
+                "borrowerName": "User",
+                # "certificateValidate": 1,
+                "creditCode": "级别",
+                # "creditValidate": 0,
+                "currentRate": "协议利率",
+                "funding": "已投金额",
+                # "isPay": false,
+                "listingId": "listingId",
+                # "mobileRealnameValidate": 1,
+                "months": "期限",
+                # "nCIICIdentityCheck": 0,
+                # "statusId": 2,
+                "title": "title"
+        }
+
+        for key, value in key_dict.items():
+            if key not in item:
+                continue
+
+            ui_item[value] = item[key]
+
+        ui_item["creationDate"] = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime())
+        return ui_item
+
+    def convert_open_loan_list_items_to_ui(self, item):
+        ui_item = {}
+        key_dict = {"CreditCode": "级别",
+                    "Gender": "性别",
+                    "Months": "期限",
+                    "Age": "年龄",
+                    "OwingAmount": "待还金额",
+                    "OverdueLessCount": "逾期（0-15天）还清次数",
+                    "OverdueMoreCount": "逾期（15天以上）还清次数",
+                    "SuccessCount": "成功借款次数",
+                    "NormalCount": "正常还清次数",
+                    "HighestDebt": "历史最高负债",
+                    "Amount": "借款金额",
+                    "HighestPrincipal": "单笔最高借款金额",
+                    "EducationDegree": "文化程度",
+                    "GraduateSchool": "毕业院校",
+                    "StudyStyle": "学习形式",
+                    "CurrentRate": "协议利率",
+                    "FirstSuccessBorrowTime": "第一次成功借款时间",
+                    "RegisterTime": "注册时间",
+                    "TotalPrincipal": "累计借款金额",
+                    "BorrowName": "User",
+                    "ListingId": "listingId",
+                    "Title": "title",
+                    "RemainFunding": "RemainFunding"
+                    # "": "creationDate"
+                    }
+
+        for key, value in key_dict.items():
+            if key not in item:
+                continue
+
+            ui_item[value] = item[key]
+        ui_item["creationDate"] = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime())
+        return ui_item
+
     def convert_open_to_ui(self, item):
         ui_item = {}
         key_dict = {"CreditCode": "级别",
@@ -31,6 +95,7 @@ class PpdItemConvertor:
                     "TotalPrincipal": "累计借款金额",
                     "BorrowName": "User",
                     "ListingId": "listingId",
+                    "Title": "title"
                     # "": "creationDate"
                     }
 
@@ -53,11 +118,13 @@ class PpdItemConvertor:
             # except Exception as ex:
             #     self.logger.warning(f"{ex}, {key}, {value}", exc_info=True)
 
-        ui_item["成功还款次数"] = ui_item["正常还清次数"] + ui_item["逾期（0-15天）还清次数"] + ui_item["逾期（15天以上）还清次数"]
-        ui_item["本次借款后负债"] = item["Amount"] + item["OwingAmount"]
+        if "正常还清次数" in ui_item:
+            ui_item["成功还款次数"] = ui_item["正常还清次数"] + ui_item["逾期（0-15天）还清次数"] + ui_item["逾期（15天以上）还清次数"]
 
-        current_time = time.localtime()
-        ui_item["creationDate"] = time.strftime('%Y-%m-%dT%H:%M:%S', current_time)
+        if "OwningAmount" in item:
+            ui_item["本次借款后负债"] = item["Amount"] + item["OwingAmount"]
+
+        ui_item["creationDate"] = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime())
         return ui_item
 
     def convert_open_borrower_statistics_to_flat(self, item):

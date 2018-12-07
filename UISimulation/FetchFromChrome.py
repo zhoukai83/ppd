@@ -85,6 +85,53 @@ class FetchFromChrome():
         cookies = "; ".join(cookie_list)
         return cookies
 
+    def get_loan_list_items(self):
+        MAX_RETRY = 1
+        retry = 0
+        list_items = []
+
+        if not self.wait_until_css(".list-container tr", 1.5):
+            return list_items
+
+        while retry < MAX_RETRY:
+            try:
+                html = self.driver.find_element_by_css_selector(".list-container").get_attribute("innerHTML")
+                soup = BeautifulSoup(html, "lxml")
+
+                for row in soup.find_all("tr"):
+                    cell = row.find_all("td")[1]
+                    link_element = cell.find("a")
+                    link_href = link_element.get("href")
+
+                    if self._is_loan_exist(link_href):
+                        continue
+
+                    self.history.append(link_href)
+                    if len(self.history) > 300:
+                        self.history.pop(0)
+
+                    listing_id = self.get_id(link_href)
+
+                    # td_list = row.find_all("td")
+                    # lilv = td_list[3]
+                    # amount = td_list[4].text.replace("\xa5", "")
+                    # period = td_list[5]
+                    # progress_bar = td_list[6]
+                    # progresses = progress_bar.find_all(class_="progress")
+                    # self.logger.info(f"{link_href}, {lilv.text}, {amount}, {period.text}")
+                    # listing_ids.append(listing_id)
+
+                # total_page = Utils.convert_to_int(soup.find(class_="el-pagination__total").text)
+                # current_page = Utils.convert_to_int(soup.select(".number.active")[0].text)
+                return list_items
+            except Exception as e:
+                self.logger.error(e, exc_info=True)
+            retry += 1
+            time.sleep(1)
+
+        return list_items
+        pass
+
     def get_all_listing_items(self):
         MAX_RETRY = 1
         retry = 0

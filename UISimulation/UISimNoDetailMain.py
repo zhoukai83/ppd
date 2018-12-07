@@ -39,7 +39,7 @@ def restore_config():
 
 
 def filter_item_if_too_many(item):
-    if item.get("NormalCount", 0) < 20:
+    if item.get("NormalCount", 0) < 25:
         return False
 
     if item["RemainFunding"] == 0:

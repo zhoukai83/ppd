@@ -36,16 +36,15 @@ def restore_config():
 
 
 def may_ahead(item):
-
-    if item.get("owingAmount", 0) > 0 or item.get("previous_listing_0_status", 4) != 12:  # \
-            # or item.get("previous_listing_1_status", 4) != 12:
+    if item.get("owingAmount", 0) > 0 or item.get("previous_listing_0_status", 4) != 12 \
+            or item.get("previous_listing_1_status", 4) != 12:
             # or item.get("previous_listing_2_status", 4) != 12:
         return False
 
     previous_listing_0_date_str = item.get("previous_listing_0_date")
-    # previous_listing_1_date_str = item.get("previous_listing_1_date")
+    previous_listing_1_date_str = item.get("previous_listing_1_date")
     # previous_listing_2_date_str = item.get("previous_listing_2_date")
-    if not previous_listing_0_date_str: # or not previous_listing_1_date_str: #or not previous_listing_2_date_str:
+    if not previous_listing_0_date_str or not previous_listing_1_date_str: #or not previous_listing_2_date_str:
         return False
 
     now = datetime.datetime.now()
@@ -53,9 +52,9 @@ def may_ahead(item):
     if (now - previous_listing_0_date).days > 7:
         return False
 
-    # previous_listing_1_date = dateutil.parser.parse(previous_listing_1_date_str)
-    # if (now - previous_listing_1_date).days > 15:
-    #     return False
+    previous_listing_1_date = dateutil.parser.parse(previous_listing_1_date_str)
+    if (now - previous_listing_1_date).days > 15:
+        return False
 
     # previous_listing_2_date = dateutil.parser.parse(previous_listing_2_date_str)
     # if (now - previous_listing_2_date).days > 25:
@@ -123,41 +122,33 @@ def main():
                                                                     and item["CreditCode"] in ["AA"]
                                                                     and item.get("RemainFunding", 0) > 500
                                                                     and item.get("Rate") >= 9.5
-                                                                    and item["ListingId"] not in listing_id_cache][:4]
+                                                                    and item["ListingId"] not in listing_id_cache][:1]
                 lists = ppd_open_client.get_loan_list_v3(filter_func)
                 if not lists:
                     continue
-                # may_ahead_lists = []
+                may_ahead_lists = []
 
-                may_ahead_lists = lists
-                # lists = ppd_open_client.aio_batch_get_listing_info([item["ListingId"] for item in lists])
-                # success_count_greator_1 = [item for item in lists if item["SuccessCount"] >= 3]
-                #
-                # borrower_statistics = []
-                # if len(success_count_greator_1) >= 1:
-                #     tasks = [asyncio.ensure_future(ppd_sim_client.get_borrower_statistics(item["ListingId"])) for item in success_count_greator_1]
-                #     aio_borrower_statistics_results = loop.run_until_complete(asyncio.gather(*tasks))
-                #     # logger.info(json.dumps(aio_borrower_statistics_results, ensure_ascii=False))
-                #
-                #     borrower_statistics = [ppd_convertor.convert_open_borrower_statistics_to_flat(item) for item in aio_borrower_statistics_results]
-                #     # logger.info(json.dumps(borrower_statistics, ensure_ascii=False))
-                #     may_ahead_lists = [item for item in borrower_statistics if may_ahead(item)]
-                #
-                # if may_ahead_lists:
-                #     logger.log(21, f"{[item['listingId'] for item in may_ahead_lists]} {json.dumps(may_ahead_lists, indent=4, ensure_ascii=False)}")
-                #
-                #     for borrower_statistics_item in borrower_statistics:
-                #         [info_item.update(borrower_statistics_item) for info_item in lists if borrower_statistics_item["listingId"] == info_item["ListingId"]]
+                # may_ahead_lists = lists
+                lists = ppd_open_client.aio_batch_get_listing_info([item["ListingId"] for item in lists])
+                success_count_greator_1 = [item for item in lists if item["SuccessCount"] >= 3]
+
+                borrower_statistics = []
+                if len(success_count_greator_1) >= 1:
+                    tasks = [asyncio.ensure_future(ppd_sim_client.get_borrower_statistics(item["ListingId"])) for item in success_count_greator_1]
+                    aio_borrower_statistics_results = loop.run_until_complete(asyncio.gather(*tasks))
+                    # logger.info(json.dumps(aio_borrower_statistics_results, ensure_ascii=False))
+
+                    borrower_statistics = [ppd_convertor.convert_open_borrower_statistics_to_flat(item) for item in aio_borrower_statistics_results]
+                    # logger.info(json.dumps(borrower_statistics, ensure_ascii=False))
+                    may_ahead_lists = [item for item in borrower_statistics if may_ahead(item)]
+
+                if may_ahead_lists:
+                    logger.log(21, f"{[item['listingId'] for item in may_ahead_lists]} {json.dumps(may_ahead_lists, indent=4, ensure_ascii=False)}")
+
+                    for borrower_statistics_item in borrower_statistics:
+                        [info_item.update(borrower_statistics_item) for info_item in lists if borrower_statistics_item["listingId"] == info_item["ListingId"]]
 
                 tasks = [asyncio.ensure_future(ppd_open_client.aio_bid(item["ListingId"], 500)) for item in may_ahead_lists]
-                # tasks = []
-                # for item in may_ahead_lists:
-                #     id = item["listingId"]
-                #
-                #     # ppd_open_client.bid(id, 500)
-                #     task = asyncio.ensure_future(ppd_open_client.aio_bid(id, 500))
-                #     tasks.append(task)
-
                 aio_bid_results = loop.run_until_complete(asyncio.gather(*tasks))
                 for item in aio_bid_results:
                     json_data = json.loads(item, encoding="utf-8")
@@ -178,7 +169,7 @@ def main():
                 logger.info(f"{may_ahead_lists}")
                 df = PandasUtils.save_list_to_csv(data_file_path, df, lists)
                 # logger.info(f"sleep, {len(success_count_greator_1)}")
-                # time.sleep(len(success_count_greator_1) * 2)
+                time.sleep(len(success_count_greator_1) * 4)
 
                 # balance_result = ppd_open_client.get_query_balance()
                 # balance_result = json.loads(balance_result, encoding="utf-8")

@@ -88,6 +88,7 @@ def get_listing_infos_combine_open_ui(ppd_open_client: PpdOpenClient, ppd_sim_cl
 def should_bid_without_detail_info(items):
     should_bid_list = []
     for item in items:
+
         if item["级别"] == "A" and item["期限"] == 3:
             title = item.get("title")
             match = re.search(r"(?<=第)\d+(?=次)", title, re.DOTALL)
@@ -96,7 +97,18 @@ def should_bid_without_detail_info(items):
                 result = match.group()
                 number = int(result)
 
-            if number >= 4:
+            if number >= 3:
+                should_bid_list.append(item)
+        
+        if item["级别"] == "B" and item["期限"] == 3:
+            title = item.get("title")
+            match = re.search(r"(?<=第)\d+(?=次)", title, re.DOTALL)
+            number = 1
+            if match:
+                result = match.group()
+                number = int(result)
+
+            if number >= 12:
                 should_bid_list.append(item)
 
     return should_bid_list
@@ -126,8 +138,8 @@ def main():
 
     config = refresh_config(config_file_name)
 
-    token_update_time, token_config = TokenHelper.get_token_from_config()
-    ppd_open_client.set_access_token(token_config["AccessToken"])
+    # token_update_time, token_config = TokenHelper.get_token_from_config()
+    # ppd_open_client.set_access_token(token_config["AccessToken"])
 
     with FetchFromChrome(config["Session"]) as fetch_from_chrome:
         cookies = fetch_from_chrome.get_cookie_string()
@@ -136,9 +148,9 @@ def main():
         while config["Terminate"] == "False":
             tasks = []
             try:
-                if datetime.datetime.now() - token_update_time > datetime.timedelta(days=6, hours=23, minutes=30):
-                    token_update_time, token_config = TokenHelper.refresh_open_client_token(ppd_open_client, token_config, logger)
-                    ppd_open_client.set_access_token(token_config["AccessToken"])
+                # if datetime.datetime.now() - token_update_time > datetime.timedelta(days=6, hours=23, minutes=30):
+                #     token_update_time, token_config = TokenHelper.refresh_open_client_token(ppd_open_client, token_config, logger)
+                #     ppd_open_client.set_access_token(token_config["AccessToken"])
 
                 sleep_time = config["Sleep"] + random.randint(0, config["RandomSleep"])
                 if no_more_money:
@@ -182,7 +194,7 @@ def main():
                 loan_list_items = [item for item in loan_list_items if
                                item["期限"] in expected_months and item["级别"] in expected_ratings and "第1次" not in item.get("title") and "第2次" not in item.get("title") and "第3次" not in item.get("title") and item["listingId"] not in listing_ids_cache]
 
-                loan_list_items = loan_list_items[:4]
+                loan_list_items = loan_list_items[:3]
                 listing_ids = [item["listingId"] for item in loan_list_items]
                 listing_ids_len = len(listing_ids)
                 if not listing_ids:
@@ -222,7 +234,6 @@ def main():
 
                         task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId']))
                         tasks.append(task)
-
                         task2 = asyncio.ensure_future(ppd_open_client_2.aio_bid(item['listingId']))
                         tasks.append(task2)
 
@@ -248,9 +259,9 @@ def main():
                     elif len_listing_detail_list == 3:
                         time.sleep(2 * len_listing_detail_list)
                     elif len_listing_detail_list == 2:
-                        time.sleep(1.5)
+                        time.sleep(2.3 * len_listing_detail_list)
                     else:
-                        time.sleep(1)
+                        time.sleep(2)
 
             except PpdNeedSleepException as ex:
                 logger.warning(f"NeedSleepException, {ex}")

@@ -349,6 +349,7 @@ class PpdUISimulationRequest:
         return item_list
         pass
 
+    # 必备 借款金额 期限 级别
     def check_bid_number(self, item):
         # loan_amount = Utils.convert_to_int(item["借款金额"])
         loan_amount = item["借款金额"]

@@ -126,6 +126,7 @@ def main():
     get_list_from = "U1"
     expected_ratings = ["A", "B", "C", "D"]
     expected_months = [3, 6]
+    bid_amount = 81
     config_file_name = os.path.basename(__file__).split(".")[0] + ".json"
 
     last_refresh_list_time = time.time()
@@ -141,7 +142,7 @@ def main():
     # token_update_time, token_config = TokenHelper.get_token_from_config()
     # ppd_open_client.set_access_token(token_config["AccessToken"])
 
-    cookies = "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; __utma=1.1098278737.1530780657.1540786794.1540874893.54; __utmz=1.1540874893.54.54.utmcsr=ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/moneyhistory; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1540535505,1540536242,1540786823,1540874918; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1543218607,1545375211; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1545375211; token=78dc8134594dfea0e1aa6a7ef7093f571b2f1889019a69a6bf0e5b219cdb1e387519fb7ccea5ac481e; aliyungf_tc=AQAAAHOWVExLHw0AjlD3PGElAI+21Kp8; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; __tsid=262473610; __vsr=1546059335359.refSite%3Dhttps%3A//transfer.ppdai.com/menu/transferring/cancelNew%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1546062868548.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1546074771211.refSite%3Dhttps%3A//invstrat.ppdai.com/%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1546394516500.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1546399942126.refSite%3Dhttps%3A//invstrat.ppdai.com/strategyMarket%7Cmd%3Dreferral%7Ccn%3Dreferral; __sid=1546399942126.3.1546400373659; waterMarkTimeCheck1=01%2F02%2F2019+11%3A39%3A35; JSESSIONID=F31D96F686778E16AF90C922EED4BA5C"
+    cookies = "gr_user_id=11f8ea81-90aa-4c3e-a041-71c51c28ea51; uniqueid=747711b0-faee-473f-96e7-a488248ded5f; __fp=fp; __vid=3407234.1530775507276; _ppdaiWaterMark=15312861763999; _ga=GA1.2.1098278737.1530780657; ppdaiRole=8; __utma=1.1098278737.1530780657.1540786794.1540874893.54; __utmz=1.1540874893.54.54.utmcsr=ppdai.com|utmccn=(referral)|utmcmd=referral|utmcct=/moneyhistory; Hm_lvt_aab1030ecb68cd7b5c613bd7a5127a40=1540535505,1540536242,1540786823,1540874918; Hm_lvt_f87746aec9be6bea7b822885a351b00f=1543218607,1545375211; Hm_lpvt_f87746aec9be6bea7b822885a351b00f=1545375211; token=78dc8134594dfea0e1aa6a7ef7093f571b2f1889019a69a6bf0e5b219cdb1e387519fb7ccea5ac481e; aliyungf_tc=AQAAAPKxcnMI/goAjlD3PAt3MySMqUqH; __tsid=225271519; __vsr=1546505854605.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV3%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1546508350726.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1546581498720.refSite%3Dhttps%3A//tz.ppdai.com/account/indexV3%7Cmd%3Dreferral%7Ccn%3Dreferral%3B1546586577544.src%3Ddirect%7Cmd%3Ddirect%7Ccn%3Ddirect%3B1546827928367.refSite%3Dhttps%3A//pay.ppdai.com/Withdraw/CashSuc%7Cmd%3Dreferral%7Ccn%3Dreferral; sensorsdata2015jssdkcross=%7B%22distinct_id%22%3A%22pdu8953799660%22%2C%22%24device_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22first_id%22%3A%221646959503432e-09fcbfb7c16c45-5b193613-2304000-16469595035ae%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_referrer%22%3A%22%22%2C%22%24latest_referrer_host%22%3A%22%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC(%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80)%22%7D%7D; __sid=1546827928367.12.1546829014789; waterMarkTimeCheck1=01%2F07%2F2019+10%3A43%3A35"
     ppd_sim_client.update_cookies(cookies)
 
     while config["Terminate"] == "False":
@@ -201,8 +202,8 @@ def main():
 
             bid_without_detail_list = should_bid_without_detail_info(loan_list_items)
             if bid_without_detail_list:
-                logger.log(21, f"should_bid_without_detail_info from {get_list_from}: {bid_without_detail_list}")
-                task_list = [asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId'])) for item in bid_without_detail_list]
+                logger.log(21, f"should_bid_without_detail_info from {get_list_from}: {[item['listingId'] for item in bid_without_detail_list]}")
+                task_list = [asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId'], 52)) for item in bid_without_detail_list]
                 tasks.extend(task_list)
                 listing_ids = [listing_id for listing_id in listing_ids if listing_id not in [item["listingId"] for item in bid_without_detail_list]]
                 listing_ids_len = len(listing_ids)
@@ -228,14 +229,14 @@ def main():
                     # open_bid_result = ppd_open_client.bid(item['listingId'])
                     # logger.log(21, f"bid open:{open_bid_result}")
 
-                    task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId']))
+                    task = asyncio.ensure_future(ppd_open_client.aio_bid(item['listingId'], bid_amount))
                     tasks.append(task)
 
                     if not ppd_sim_client.check_bid_number(item):
                         continue
 
                     item["strategy"] = first_strategy.name
-                    if ppd_sim_client.bid_by_request(item):
+                    if ppd_sim_client.bid_by_request(item, bid_amount+1):
                         logger.log(21, f"bid from {get_list_from}:{item['listingId']} {first_strategy} \n{first_strategy.strategy_detail()} \n{json.dumps(item, indent=4, sort_keys=True, ensure_ascii=False)}")
 
             if tasks:
@@ -254,8 +255,8 @@ def main():
                         listing_item = next((item for item in bid_without_detail_list if item["listingId"] == listing_id), None)
                         if not listing_item:
                             continue
-                            
-                        logger.info(f"bid again with U: {listing_item}")
+
+                        logger.info(f"bid again with U: {listing_item['listingId']}")
                         if not ppd_sim_client.check_bid_number(listing_item):
                             continue
 

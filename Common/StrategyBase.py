@@ -97,6 +97,10 @@ class StrategyBase:
                     filter_item_result = actual_value > expected_value
                 elif filter_item_compare == "<":
                     filter_item_result = actual_value < expected_value
+                elif filter_item_compare == ">=":
+                    filter_item_result = actual_value >= expected_value
+                elif filter_item_compare == "<=":
+                    filter_item_result = actual_value <= expected_value
                 elif filter_item_compare == "in":
                     if expected_value == "School211":
                         school211_list = Utils.get_211_school()

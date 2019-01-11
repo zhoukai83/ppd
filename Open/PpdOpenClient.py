@@ -286,7 +286,7 @@ class PpdOpenClient:
         except requests.exceptions.RequestException as e:
             self.logger.info(f"get_loan_list_ids RequestException: {ex}")
         except Exception as ex:
-            self.logger.info(f"get_loan_list_ids exception: {ex} result: {result}", exc_info=True)
+            self.logger.info(f"get_loan_list_ids {self.client_index} exception: {ex} result: {result}", exc_info=True)
 
         return new_listing_items
 
@@ -369,30 +369,30 @@ def auth():
 def update_token():
     logger.info("start")
 
-    # try:
-    #     client = PpdOpenClient(key_index=1)
-    #     logger.info("Get access token")
-    #     openid = "a27effb5cc9f4d2fad1053642a155fe1"
-    #     refresh_token = "2ed3d567594dfea0e1aa6a7ef7093f57e5683307b404fc326114ef5e"
-    #     logger.info(client.refresh_token(openid, refresh_token))
-    # except Exception as ex:
-    #     print("exception", ex)
-
     try:
-        client = PpdOpenClient(key_index=2)
+        client = PpdOpenClient(key_index=1)
         logger.info("Get access token")
-        openid = "77e88d5ccb7d4ba6955c9e4a0e132dc6"
-        refresh_token = "78ddd332594dfea0e1aa6a7ef7093f57d7d04bdbfaac9bf9956f11a2"
+        openid = "a27effb5cc9f4d2fad1053642a155fe1"
+        refresh_token = "2ed3d567594dfea0e1aa6a7ef7093f57e5683307b404fc326114ef5e"
         logger.info(client.refresh_token(openid, refresh_token))
     except Exception as ex:
         print("exception", ex)
+
+    # try:
+    #     client = PpdOpenClient(key_index=2)
+    #     logger.info("Get access token")
+    #     openid = "77e88d5ccb7d4ba6955c9e4a0e132dc6"
+    #     refresh_token = "78ddd332594dfea0e1aa6a7ef7093f57d7d04bdbfaac9bf9956f11a2"
+    #     logger.info(client.refresh_token(openid, refresh_token))
+    # except Exception as ex:
+    #     print("exception", ex)
 
 
 
 def main():
     # client = PpdOpenClient()
 
-    client = PpdOpenClient(key_index=2)
+    client = PpdOpenClient(key_index=3)
     listing_ids = [129967042, 129967782]
     logger.info(client.private_key)
 
@@ -412,7 +412,7 @@ def main():
         # refresh_token = "2cdb8235594dfea0e1aa6a7ef7093f57dbdb96f607c79bcff16bf076"
         # print(client.refresh_token(openid, refresh_token))
 
-        # openid = "77e88d5ccb7d4ba6955c9e4a0e132dc6"
+        # openid = "77e88d5ccb7d4ba6955c9e4a0e132dc6"cd .
         # refresh_token = "78ddd332594dfea0e1aa6a7ef7093f57d7d04bdbfaac9bf9956f11a2"
         # print(client.refresh_token(openid, refresh_token))
 
@@ -454,8 +454,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     try:
-        # main()
+        main()
         # auth()
-        update_token()
+        # update_token()
     except Exception as ex:
         print(ex)

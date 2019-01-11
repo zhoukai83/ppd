@@ -443,7 +443,7 @@ class PpdUISimulationRequest:
         return False
 
     # {"result": 1006, "resultMessage": "余额不足"}
-    def bid_by_request(self, item):
+    def bid_by_request(self, item, bid_amount=52):
         headers = self.headers
         headers["Referer"] = "https://invest.ppdai.com/loan/listpage/?risk=1&mirror=&pageIndex=1&period=&sex=male&money=,&times=&auth=&rate="
         url = "https://invest.ppdai.com/api/invapi/PcBidService/oneKeyBid"
@@ -490,7 +490,7 @@ class PpdUISimulationRequest:
             "successLoanNum": "3",
             "totalCount": 1,
             "userId": 87288708,
-            "sigleBidAmount": 52,
+            "sigleBidAmount": bid_amount,
             "bidCount": 1,
             "useCoupon": True
         }

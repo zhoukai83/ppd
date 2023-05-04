@@ -1,0 +1,4 @@
+Analysis/ppdai_3_23/LC.csv filter=lfs diff=lfs merge=lfs -text
+Analysis/ppdai_3_23/LCIS.csv filter=lfs diff=lfs merge=lfs -text
+Analysis/ppdai_3_23/LP.csv filter=lfs diff=lfs merge=lfs -text
+Analysis/ppdai_3_23/LP_handle.csv filter=lfs diff=lfs merge=lfs -text
